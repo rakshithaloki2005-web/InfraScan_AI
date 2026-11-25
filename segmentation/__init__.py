@@ -1,0 +1,2 @@
+"""InfraScan crack segmentation module."""
+
