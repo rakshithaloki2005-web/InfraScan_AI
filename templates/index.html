@@ -1,0 +1,2495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InfraScan – AI-Powered Crack & Damage Assessment for Civil Infrastructure</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f97316'><path d='M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'/></svg>">
+  
+  <!-- Tailwind CSS & Chart.js via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            civil: {
+              navy: '#0a192f',
+              navyDark: '#070f1e',
+              navyCard: '#0f1f38',
+              steel: '#334155',
+              steelLight: '#64748b',
+              steelBorder: '#1e293b',
+              orange: '#f97316',
+              orangeHover: '#ea580c',
+              orangeGlow: 'rgba(249, 115, 22, 0.25)',
+              concrete: '#f8fafc',
+              blueprint: '#1e3a8a'
+            },
+            brand: {
+              50: '#fff7ed',
+              100: '#ffedd5',
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+              800: '#9a3412',
+              900: '#7c2d12',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    /* Civil Blueprint Pattern */
+    .blueprint-pattern {
+      background-color: #0a192f;
+      background-image: 
+        linear-gradient(rgba(249, 115, 22, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(249, 115, 22, 0.05) 1px, transparent 1px),
+        linear-gradient(rgba(100, 116, 139, 0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(100, 116, 139, 0.12) 1px, transparent 1px);
+      background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+    }
+    
+    .girder-strip {
+      background: repeating-linear-gradient(
+        -45deg,
+        #f97316,
+        #f97316 10px,
+        #0a192f 10px,
+        #0a192f 20px
+      );
+    }
+
+    .sidebar-link-active {
+      background-color: #1e293b;
+      color: #f97316;
+      border-left: 4px solid #f97316;
+      font-weight: 700;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex font-sans antialiased selection:bg-orange-500 selection:text-white">
+
+  <!-- ======================================================== -->
+  <!-- LEFT NAVIGATION SIDEBAR (Civil Engineering Dark Theme) -->
+  <!-- ======================================================== -->
+  <aside class="w-64 bg-slate-950 text-slate-300 flex flex-col flex-shrink-0 min-h-screen border-r border-slate-800 select-none">
+    
+    <!-- App Logo & Branding with Bridge Icon -->
+    <div class="h-16 flex items-center px-5 border-b border-slate-800 space-x-3 bg-slate-950">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-900 border border-orange-500/40 flex items-center justify-center text-orange-500 shadow-md shadow-orange-500/10">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M5 21V7l7-4 7 4v14M4 11h16M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6" />
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center space-x-1.5">
+          <span class="text-base font-black tracking-wide text-white">INFRA<span class="text-orange-500">SCAN</span></span>
+          <span class="px-1.5 py-0.2 rounded text-[10px] font-black uppercase tracking-wider bg-orange-500/20 text-orange-400 border border-orange-500/30">v2.0</span>
+        </div>
+        <p class="text-[10px] text-slate-400 font-medium">Civil Structural AI Suite</p>
+      </div>
+    </div>
+
+    <!-- Navigation Menu Items -->
+    <nav class="flex-1 py-4 px-2 space-y-1 text-xs font-medium overflow-y-auto custom-scrollbar">
+      
+      <p class="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+        <span>Structural Triage</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+      </p>
+      
+      <!-- 1. Dashboard -->
+      <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-900 hover:text-white transition sidebar-link-active">
+        <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+        <span>Dashboard Overview</span>
+      </button>
+
+      <!-- 2. Image Classification Section -->
+      <button onclick="navigateTo('classification')" id="nav-classification" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-900 hover:text-white transition">
+        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span>Image Classification</span>
+      </button>
+
+      <!-- 3. Crack Segmentation Section -->
+      <button onclick="navigateTo('segmentation')" id="nav-segmentation" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-900 hover:text-white transition">
+        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+        <span>Crack Segmentation</span>
+      </button>
+
+      <!-- 4. New Inspection -->
+      <button onclick="navigateTo('new-inspection')" id="nav-new-inspection" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-900 hover:text-white transition">
+        <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span>New Inspection</span>
+      </button>
+
+      <!-- 5. AI Damage Analysis -->
+      <button onclick="navigateTo('analysis')" id="nav-analysis" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-900 hover:text-white transition">
+        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+        <span>AI Damage Analysis</span>
+      </button>
+
+      <!-- 6. Inspection History -->
+      <button onclick="navigateTo('history')" id="nav-history" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-900 hover:text-white transition">
+        <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span>Inspection History</span>
+      </button>
+
+      <p class="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+        <span>Asset Engineering</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+      </p>
+
+      <!-- 7. Infrastructure Assets -->
+      <button onclick="navigateTo('assets')" id="nav-assets" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-900 hover:text-white transition">
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+        <span>Infrastructure Assets</span>
+      </button>
+
+      <!-- 8. Damage Analytics -->
+      <button onclick="navigateTo('analytics')" id="nav-analytics" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-900 hover:text-white transition">
+        <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" /></svg>
+        <span>Damage Analytics</span>
+      </button>
+
+      <!-- 9. Model Performance -->
+      <button onclick="navigateTo('models')" id="nav-models" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-900 hover:text-white transition">
+        <svg class="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+        <span>Model Performance</span>
+      </button>
+
+      <!-- 10. Reports -->
+      <button onclick="navigateTo('reports')" id="nav-reports" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-900 hover:text-white transition">
+        <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+        <span>Reports Repository</span>
+      </button>
+
+      <!-- 11. Profile & Settings -->
+      <button onclick="navigateTo('settings')" id="nav-settings" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-900 hover:text-white transition">
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+        <span>Inspector Profile</span>
+      </button>
+
+    </nav>
+
+    <!-- Bottom System Health Indicator -->
+    <div class="p-3 border-t border-slate-800 bg-slate-950 text-[11px] text-slate-400 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="font-medium">Dual AI Engines: Ready</span>
+      </div>
+      <a href="/docs" target="_blank" class="text-orange-400 hover:underline font-mono">API &rarr;</a>
+    </div>
+
+  </aside>
+
+  <!-- ======================================================== -->
+  <!-- MAIN APPLICATION CONTENT AREA -->
+  <!-- ======================================================== -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar">
+
+    <!-- Top Navigation Header -->
+    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-40 shadow-sm">
+      <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">SHM PORTAL</span>
+          <h1 id="pageTitle" class="text-lg font-bold text-slate-900">Dashboard</h1>
+        </div>
+        <span id="pageSubtitle" class="text-xs text-slate-500 border-l border-slate-200 pl-3 hidden sm:inline-block">Infrastructure Damage Overview</span>
+      </div>
+      
+      <div class="flex items-center space-x-3">
+        <!-- New Inspection Button -->
+        <button onclick="navigateTo('new-inspection')" class="px-3.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-bold shadow-sm shadow-orange-600/30 transition flex items-center space-x-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+          <span>+ New Inspection</span>
+        </button>
+
+        <a href="/api/inspections/export/csv" class="px-3 py-1.5 border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-xs font-semibold transition">
+          Export CSV
+        </a>
+
+        <!-- Inspector Profile Pill & Sign Out -->
+        <div class="border-l border-slate-200 pl-3 flex items-center space-x-2">
+          <button onclick="navigateTo('settings')" class="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-slate-100 transition text-left" title="View Inspector Profile">
+            <div id="headerUserAvatar" class="w-8 h-8 rounded-full bg-slate-900 text-orange-400 font-black text-xs flex items-center justify-center border border-orange-500/30 shadow-sm">
+              AD
+            </div>
+            <div class="hidden sm:block text-xs leading-tight">
+              <p id="headerUserName" class="font-bold text-slate-900">Administrator</p>
+              <p id="headerUserRole" class="text-[10px] text-orange-600 font-bold">Admin</p>
+            </div>
+          </button>
+          
+          <button onclick="handleLogout()" title="Sign Out of InfraScan" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Dynamic Content Container -->
+    <main class="flex-1 p-6 space-y-6">
+
+      <!-- ==================================================== -->
+      <!-- VIEW 1: DASHBOARD (Civil Infrastructure Overview) -->
+      <!-- ==================================================== -->
+      <section id="view-dashboard" class="space-y-6">
+        
+        <!-- Top Metric Summary Cards (Civil Infrastructure Triage) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          
+          <!-- Total Assets Card -->
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 transition">
+            <div class="flex items-center justify-between">
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Civil Assets</p>
+              <span class="p-1.5 rounded-lg bg-slate-100 text-slate-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+              </span>
+            </div>
+            <h3 id="dashTotalAssets" class="text-2xl font-black text-slate-900 mt-2">0</h3>
+            <p class="text-[11px] text-slate-400 mt-1">Bridges, Pavements &amp; Walls</p>
+          </div>
+
+          <!-- Total Inspections Card -->
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 transition">
+            <div class="flex items-center justify-between">
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Total Inspections</p>
+              <span class="p-1.5 rounded-lg bg-blue-50 text-blue-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+              </span>
+            </div>
+            <h3 id="dashTotalInspections" class="text-2xl font-black text-slate-900 mt-2">0</h3>
+            <p class="text-[11px] text-slate-400 mt-1">Logged in SQLite Audit</p>
+          </div>
+
+          <!-- Cracks Detected Card -->
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 transition">
+            <div class="flex items-center justify-between">
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Cracks Detected</p>
+              <span class="p-1.5 rounded-lg bg-rose-50 text-rose-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+              </span>
+            </div>
+            <h3 id="dashCracksDetected" class="text-2xl font-black text-rose-600 mt-2">0</h3>
+            <p class="text-[11px] text-slate-400 mt-1">Positive Surface Screening</p>
+          </div>
+
+          <!-- High-Priority Findings Card -->
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 transition">
+            <div class="flex items-center justify-between">
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">High Priority</p>
+              <span class="p-1.5 rounded-lg bg-orange-50 text-orange-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              </span>
+            </div>
+            <h3 id="dashHighPriority" class="text-2xl font-black text-orange-600 mt-2">0</h3>
+            <p class="text-[11px] text-slate-400 mt-1">Severe Fissure Coverage (&gt;5%)</p>
+          </div>
+
+          <!-- PDF Reports Card -->
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 transition">
+            <div class="flex items-center justify-between">
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">PDF Reports</p>
+              <span class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              </span>
+            </div>
+            <h3 id="dashReportsGen" class="text-2xl font-black text-slate-900 mt-2">0</h3>
+            <p class="text-[11px] text-slate-400 mt-1">Exported ReportLab Files</p>
+          </div>
+
+        </div>
+
+        <!-- Banner + Quick Action Hero (Civil Engineering Theme) -->
+        <div class="blueprint-pattern text-white rounded-2xl p-6 shadow-xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+          <div class="space-y-2 z-10 max-w-2xl">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 text-orange-400 text-xs font-bold">
+              <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+              <span>AI STRUCTURAL HEALTH MONITORING PIPELINE</span>
+            </div>
+            <h2 class="text-2xl font-extrabold tracking-tight">Concrete Crack Screening &amp; Surface Damage Triage</h2>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Standardized dual-stage neural diagnostics: MobileNetV2 classification (trained on 56,092 SDNET2018 samples) paired with 3-stage symmetrical U-Net pixel segmentation (CRACK500 benchmark) and automated ReportLab engineering synthesis.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2.5 z-10">
+            <button onclick="navigateTo('new-inspection')" class="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-orange-600/30 transition">
+              + New Inspection
+            </button>
+            <button onclick="quickTestSample('cracked')" class="px-3.5 py-2 bg-slate-900/90 hover:bg-slate-800 text-orange-300 text-xs font-semibold rounded-lg border border-orange-500/30 transition">
+              ⚡ Demo Cracked Concrete
+            </button>
+            <button onclick="quickTestSample('uncracked')" class="px-3.5 py-2 bg-slate-900/90 hover:bg-slate-800 text-slate-300 text-xs font-semibold rounded-lg border border-slate-700 transition">
+              ⚡ Demo Intact Concrete
+            </button>
+          </div>
+        </div>
+
+        <!-- Charts Grid (Real-time from Database) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-slate-900">Crack Detection Distribution</h3>
+              <span class="text-[11px] font-semibold text-slate-400">MobileNetV2 Class Ratio</span>
+            </div>
+            <div class="h-60 flex items-center justify-center">
+              <canvas id="chartCrackRatio"></canvas>
+            </div>
+          </div>
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-slate-900">Damage Severity Breakdown</h3>
+              <span class="text-[11px] font-semibold text-slate-400">Surface Density % Rule</span>
+            </div>
+            <div class="h-60 flex items-center justify-center">
+              <canvas id="chartSeverity"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Inspections Table -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <div class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+              <h3 class="text-sm font-bold text-slate-900">Recent Infrastructure Inspections</h3>
+            </div>
+            <button onclick="navigateTo('history')" class="text-xs text-orange-600 hover:underline font-bold">View Full Archive &rarr;</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-4">Inspection ID</th>
+                  <th class="py-3 px-4">Infrastructure Asset</th>
+                  <th class="py-3 px-4">Date</th>
+                  <th class="py-3 px-4">Classification</th>
+                  <th class="py-3 px-4">Confidence</th>
+                  <th class="py-3 px-4">Severity</th>
+                  <th class="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="dashRecentTbody" class="divide-y divide-slate-100 text-slate-700">
+                <tr><td colspan="7" class="py-6 text-center text-slate-400">Loading inspection records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- VIEW: DEDICATED IMAGE CLASSIFICATION SECTION -->
+      <!-- ==================================================== -->
+      <section id="view-classification" class="hidden space-y-6">
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-100 gap-4">
+            <div>
+              <span class="text-xs font-bold text-orange-600 uppercase tracking-wide">Neural Pipeline &bull; Stage 1</span>
+              <h2 class="text-xl font-bold text-slate-900">Image Classification (MobileNetV2)</h2>
+              <p class="text-xs text-slate-500">Surface-level crack screening fine-tuned on the Utah State University SDNET2018 concrete benchmark.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="quickTestSample('cracked')" class="px-3 py-1.5 bg-orange-50 text-orange-700 border border-orange-200 rounded-lg text-xs font-semibold hover:bg-orange-100 transition">
+                ⚡ Test Cracked Sample
+              </button>
+              <button onclick="quickTestSample('uncracked')" class="px-3 py-1.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold hover:bg-slate-200 transition">
+                ⚡ Test Intact Sample
+              </button>
+            </div>
+          </div>
+
+          <!-- Feature Cards Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-slate-800">Architecture</span>
+                <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold">Transfer Learning</span>
+              </div>
+              <p class="text-slate-600">MobileNetV2 base (ImageNet weights) with custom GlobalAveragePooling2D, Dropout(0.3), and single-unit Sigmoid classifier.</p>
+              <p class="text-[11px] text-slate-500">Input Resolution: 224 &times; 224 &times; 3</p>
+            </div>
+
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-slate-800">Dataset Grounding</span>
+                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">SDNET2018</span>
+              </div>
+              <p class="text-slate-600">56,092 high-resolution concrete images covering Bridge Decks, Pavements, and Retaining Walls across Utah civil infrastructure.</p>
+              <p class="text-[11px] text-slate-500">Balanced class weighting: 0.589 (Intact) / 3.308 (Cracked)</p>
+            </div>
+
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-slate-800">Audit Performance</span>
+                <span class="px-2 py-0.5 rounded bg-orange-100 text-orange-800 text-[10px] font-bold">85.31% Accuracy</span>
+              </div>
+              <p class="text-slate-600">ROC-AUC: 0.8881 | Cracked Sensitivity / Recall: 74.06% | Validated on independent test split with strict zero leakage.</p>
+              <p class="text-[11px] text-slate-500">Loss: Binary Cross-Entropy | Adam (lr=1e-4)</p>
+            </div>
+          </div>
+
+          <!-- Call to Action Banner -->
+          <div class="p-5 rounded-xl bg-orange-50 border border-orange-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-xs text-orange-950 space-y-1">
+              <p class="font-bold">Ready to classify a field concrete surface photo?</p>
+              <p class="text-orange-800">Upload your inspection image to run the classifier and simultaneously produce pixel-level segmentation maps.</p>
+            </div>
+            <button onclick="navigateTo('new-inspection')" class="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg text-xs shadow transition flex-shrink-0">
+              Launch Inspection Scan &rarr;
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- VIEW: DEDICATED CRACK SEGMENTATION SECTION -->
+      <!-- ==================================================== -->
+      <section id="view-segmentation" class="hidden space-y-6">
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-100 gap-4">
+            <div>
+              <span class="text-xs font-bold text-emerald-600 uppercase tracking-wide">Neural Pipeline &bull; Stage 2</span>
+              <h2 class="text-xl font-bold text-slate-900">Crack Segmentation (Symmetrical U-Net)</h2>
+              <p class="text-xs text-slate-500">Pixel-level fissure localization trained on 3,368 cropped CRACK500 pavement image-mask pairs.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="quickTestSample('cracked')" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition">
+                ⚡ Test Fissure Localization
+              </button>
+            </div>
+          </div>
+
+          <!-- Feature Cards Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-slate-800">Architecture</span>
+                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Encoder-Decoder</span>
+              </div>
+              <p class="text-slate-600">3-stage symmetrical U-Net with skip connections (64 &rarr; 128 &rarr; 256 filters) to capture fine concrete micro-fissures.</p>
+              <p class="text-[11px] text-slate-500">Input/Output: 256 &times; 256 &times; 3 &rarr; 256 &times; 256 &times; 1</p>
+            </div>
+
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-slate-800">Loss Optimization</span>
+                <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold">Combined Loss</span>
+              </div>
+              <p class="text-slate-600">Trained with Binary Cross-Entropy + Dice Loss (0.5 &times; BCE + 0.5 &times; Dice) to prevent extreme background bias.</p>
+              <p class="text-[11px] text-slate-500">Output thresholded at 0.5 &rarr; Discrete binary {0, 255}</p>
+            </div>
+
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-slate-800">Surface Density Triage</span>
+                <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">Rule Engine</span>
+              </div>
+              <p class="text-slate-600">Automated surface area density calculation: (Crack Pixels / Total Pixels) &times; 100 with 4 severity levels: None, Low, Moderate, High.</p>
+              <p class="text-[11px] text-slate-500">Critical Threshold: &gt; 5.0% surface coverage</p>
+            </div>
+          </div>
+
+          <!-- Diagnostic Demonstration Card -->
+          <div class="p-5 rounded-xl bg-slate-900 text-white space-y-3">
+            <div class="flex items-center space-x-2 text-xs font-bold text-orange-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+              <span>Visual Evidence Trio Generated for Every Scan</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              For every inspection, InfraScan produces three synchronized forensic assets: <b>1. Original Surface</b>, <b>2. Discrete Binary Mask {0, 255}</b>, and <b>3. Diagnostic Crack Overlay</b> (highlighting fissure trajectories in vivid crimson over the original surface).
+            </p>
+            <div class="pt-2">
+              <button onclick="navigateTo('new-inspection')" class="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg text-xs shadow transition">
+                Start Surface Inspection &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- VIEW 2: NEW INSPECTION -->
+      <!-- ==================================================== -->
+      <section id="view-new-inspection" class="hidden space-y-6">
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm max-w-4xl mx-auto space-y-6">
+          <div class="border-b border-slate-100 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+                <h2 class="text-lg font-bold text-slate-900">Register New Infrastructure Inspection</h2>
+              </div>
+              <p class="text-xs text-slate-500">Provide asset context, upload a concrete surface photo, and run dual AI analysis.</p>
+            </div>
+            <div class="flex space-x-2">
+              <button onclick="quickTestSample('cracked')" class="px-2.5 py-1 text-xs border border-orange-300 text-orange-700 bg-orange-50 rounded hover:bg-orange-100 font-semibold transition">
+                Load Cracked Sample
+              </button>
+              <button onclick="quickTestSample('uncracked')" class="px-2.5 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50 text-slate-600 font-semibold transition">
+                Load Intact Sample
+              </button>
+            </div>
+          </div>
+
+          <form id="newInspectionForm" onsubmit="handleNewInspectionSubmit(event)" class="space-y-4">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              <!-- Select / Enter Asset -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Infrastructure Asset *</label>
+                <select id="formAssetSelect" onchange="handleAssetSelectChange(this)" class="w-full text-xs rounded-lg border border-slate-300 p-2.5 focus:border-orange-500 focus:outline-none">
+                  <option value="">-- Select from Registered Assets or Custom --</option>
+                </select>
+              </div>
+
+              <!-- Custom Name -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Infrastructure Name *</label>
+                <input type="text" id="formInfraName" required placeholder="e.g. River Viaduct Pier #4" class="w-full text-xs rounded-lg border border-slate-300 p-2.5 focus:border-orange-500 focus:outline-none">
+              </div>
+
+              <!-- Infrastructure Type -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Infrastructure Type *</label>
+                <select id="formInfraType" required class="w-full text-xs rounded-lg border border-slate-300 p-2.5 focus:border-orange-500 focus:outline-none">
+                  <option value="Bridge">Bridge</option>
+                  <option value="Building">Building</option>
+                  <option value="Road">Road</option>
+                  <option value="Pavement">Pavement</option>
+                  <option value="Concrete Structure">Concrete Structure</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <!-- Location -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Inspection Location *</label>
+                <input type="text" id="formLocation" required placeholder="e.g. Deck Span 2, South Elevation" class="w-full text-xs rounded-lg border border-slate-300 p-2.5 focus:border-orange-500 focus:outline-none">
+              </div>
+
+              <!-- Inspection Date -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Inspection Date *</label>
+                <input type="date" id="formDate" required class="w-full text-xs rounded-lg border border-slate-300 p-2.5 focus:border-orange-500 focus:outline-none">
+              </div>
+
+              <!-- Inspector Name -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Inspector Name *</label>
+                <input type="text" id="formInspector" required value="Lead Civil Inspector" class="w-full text-xs rounded-lg border border-slate-300 p-2.5 focus:border-orange-500 focus:outline-none">
+              </div>
+
+            </div>
+
+            <!-- Description -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Inspection Notes / Scope</label>
+              <textarea id="formDescription" rows="2" placeholder="Visual observation notes, environmental conditions, camera orientation..." class="w-full text-xs rounded-lg border border-slate-300 p-2.5 focus:border-orange-500 focus:outline-none"></textarea>
+            </div>
+
+            <!-- Image Upload Zone (Blueprint Pattern Border) -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Concrete Surface Image * (JPG, JPEG, PNG - Max 10MB)</label>
+              <div id="formDropzone" class="border-2 border-dashed border-slate-300 hover:border-orange-500 rounded-xl p-6 text-center cursor-pointer transition bg-slate-50/50 hover:bg-orange-50/30">
+                <input type="file" id="formFileInput" accept="image/jpeg,image/png,image/jpg" class="hidden" onchange="handleFormFileSelect(event)">
+                <div class="flex flex-col items-center justify-center space-y-2">
+                  <div class="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  </div>
+                  <div>
+                    <p class="text-xs font-semibold text-slate-700">Click to upload or drag &amp; drop image here</p>
+                    <p class="text-[11px] text-slate-400">Bridge deck, roadway, or retaining wall surface photo</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Image Preview Box -->
+            <div id="formPreviewBox" class="hidden p-3 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <img id="formPreviewImg" src="" alt="Upload Preview" class="w-14 h-14 object-cover rounded border border-slate-300">
+                <div>
+                  <p id="formPreviewName" class="text-xs font-bold text-slate-800 truncate max-w-xs"></p>
+                  <p id="formPreviewMeta" class="text-[11px] text-slate-500"></p>
+                </div>
+              </div>
+              <button type="button" onclick="clearFormFile()" class="px-2.5 py-1 text-xs border border-rose-300 text-rose-600 rounded hover:bg-rose-50 transition">
+                Remove Image
+              </button>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-4 flex justify-end space-x-3">
+              <button type="button" onclick="navigateTo('dashboard')" class="px-4 py-2 border border-slate-300 text-slate-600 text-xs font-medium rounded-lg hover:bg-slate-50 transition">
+                Cancel
+              </button>
+              <button type="submit" id="btnSubmitInspection" class="px-6 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-lg shadow-md shadow-orange-600/30 transition flex items-center space-x-2">
+                <span>Start AI Analysis &amp; Save Record</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+              </button>
+            </div>
+
+          </form>
+        </div>
+
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- VIEW 3: AI DAMAGE ANALYSIS (FULL RESULTS VIEW) -->
+      <!-- ==================================================== -->
+      <section id="view-analysis" class="hidden space-y-6">
+        
+        <!-- Empty Placeholder if no analysis performed yet -->
+        <div id="analysisEmptyState" class="bg-white p-12 rounded-xl border border-slate-200 text-center space-y-3">
+          <div class="w-14 h-14 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center mx-auto">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-800">No Active Analysis Loaded</h3>
+          <p class="text-xs text-slate-500 max-w-sm mx-auto">Create a new inspection or launch one of our fast dataset sample demos below.</p>
+          <div class="flex justify-center space-x-3 pt-2">
+            <button onclick="navigateTo('new-inspection')" class="px-4 py-2 bg-orange-600 text-white rounded-lg text-xs font-bold shadow hover:bg-orange-700">
+              Start New Inspection
+            </button>
+            <button onclick="quickTestSample('cracked')" class="px-4 py-2 bg-slate-900 text-orange-400 rounded-lg text-xs font-semibold hover:bg-slate-800 border border-orange-500/30">
+              Load Cracked Sample Demo
+            </button>
+          </div>
+        </div>
+
+        <!-- Populated Results Container -->
+        <div id="analysisActiveState" class="hidden space-y-6">
+          
+          <!-- Top Info Header -->
+          <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <div class="flex items-center space-x-2">
+                <span id="resMetaId" class="font-mono text-sm font-bold text-slate-900">INFRASCAN-20261118-XXXX</span>
+                <span id="resMetaPriorityBadge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Normal</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-1">
+                Asset: <span id="resMetaInfraName" class="font-semibold text-slate-800">Concrete Structure</span> | 
+                Type: <span id="resMetaInfraType" class="text-slate-700">Bridge</span> | 
+                Location: <span id="resMetaLocation" class="text-slate-700">Span 1</span>
+              </p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <a id="btnResDownloadPdf" href="#" target="_blank" class="px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-bold shadow transition flex items-center space-x-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                <span>Download PDF Report</span>
+              </a>
+              <button onclick="navigateTo('history')" class="px-3.5 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                View in History
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 1 & 2 & 4 Diagnostic Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            
+            <!-- Classification -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-bold text-slate-500 uppercase">Step 1: Classification</p>
+              <div class="flex items-center justify-between mt-2">
+                <span id="resClassBadge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">Cracked</span>
+                <span id="resConfidence" class="text-base font-bold text-slate-900">0.0%</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-2">MobileNetV2 (SDNET2018)</p>
+            </div>
+
+            <!-- Segmentation Pixels -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-bold text-slate-500 uppercase">Step 2: Crack Pixels</p>
+              <h4 id="resPixelCount" class="text-xl font-bold text-slate-900 mt-2">0</h4>
+              <p class="text-[11px] text-slate-500 mt-2">U-Net Localized Fissures</p>
+            </div>
+
+            <!-- Surface Density % -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-bold text-slate-500 uppercase">Step 3: Surface Density</p>
+              <h4 id="resCoveragePct" class="text-xl font-bold text-orange-600 mt-2">0.00%</h4>
+              <p class="text-[11px] text-slate-500 mt-2">(Crack Pixels / Total Pixels) &times; 100</p>
+            </div>
+
+            <!-- Severity Category -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-bold text-slate-500 uppercase">Step 4: Damage Severity</p>
+              <div class="flex items-center justify-between mt-2">
+                <span id="resSeverityBadge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">Moderate</span>
+              </div>
+              <p id="resCategoryTitle" class="text-[11px] text-slate-500 mt-2 font-medium">Moderate Visible Damage</p>
+            </div>
+
+          </div>
+
+          <!-- Step 2 Visual Evidence Trio -->
+          <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <h3 class="text-sm font-bold text-slate-900 mb-1">Visual Evidence Comparison</h3>
+            <p class="text-xs text-slate-500 mb-4">Original concrete image alongside discrete binary mask and localized diagnostic overlay.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              <!-- 1. Original -->
+              <div class="space-y-1.5 text-center">
+                <div class="bg-slate-100 rounded-lg overflow-hidden border border-slate-200 aspect-video flex items-center justify-center">
+                  <img id="imgResOriginal" src="" alt="Original Surface" class="w-full h-full object-contain">
+                </div>
+                <span class="text-xs font-bold text-slate-700">1. Original Concrete Surface</span>
+              </div>
+
+              <!-- 2. Mask -->
+              <div class="space-y-1.5 text-center">
+                <div class="bg-slate-950 rounded-lg overflow-hidden border border-slate-800 aspect-video flex items-center justify-center">
+                  <img id="imgResMask" src="" alt="Binary Mask" class="w-full h-full object-contain">
+                </div>
+                <span class="text-xs font-bold text-slate-700">2. U-Net Binary Mask {0, 255}</span>
+              </div>
+
+              <!-- 3. Overlay -->
+              <div class="space-y-1.5 text-center">
+                <div class="bg-slate-100 rounded-lg overflow-hidden border border-slate-200 aspect-video flex items-center justify-center">
+                  <img id="imgResOverlay" src="" alt="Crack Overlay" class="w-full h-full object-contain">
+                </div>
+                <span class="text-xs font-bold text-rose-700">3. Diagnostic Crack Overlay</span>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Step 5 Final Analysis Summary & Advisory -->
+          <div class="bg-orange-50/70 border border-orange-200 rounded-xl p-5 space-y-2">
+            <div class="flex items-center space-x-2 text-orange-950 font-bold text-sm">
+              <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span>Step 5: Civil Engineering Advisory &amp; Action Recommendation</span>
+            </div>
+            <p id="resSummaryText" class="text-xs text-slate-700 leading-relaxed pl-7"></p>
+            <p class="text-[11px] text-slate-500 pl-7 italic">
+              <b>Mandatory Engineering Disclaimer:</b> InfraScan provides AI-assisted visual screening of uploaded infrastructure images. Results are preliminary and do not substitute for on-site structural engineering certification or ultrasonic pulse testing. Physical crack measurements require calibrated reference scale markers.
+            </p>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- VIEW 4: INSPECTION HISTORY -->
+      <!-- ==================================================== -->
+      <section id="view-history" class="hidden space-y-6">
+        
+        <!-- Top History Stats Strip -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-[10px] font-bold text-slate-500 uppercase">Archived Inspections</p>
+              <h4 id="histTotalStat" class="text-xl font-black text-slate-900 mt-1">0</h4>
+            </div>
+            <span class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold">ALL</span>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-[10px] font-bold text-slate-500 uppercase">Cracked Surfaces</p>
+              <h4 id="histCrackedStat" class="text-xl font-black text-rose-600 mt-1">0</h4>
+            </div>
+            <span class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-xs font-bold">&ge;1</span>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-[10px] font-bold text-slate-500 uppercase">Intact Surfaces</p>
+              <h4 id="histIntactStat" class="text-xl font-black text-emerald-600 mt-1">0</h4>
+            </div>
+            <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-bold">OK</span>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-[10px] font-bold text-slate-500 uppercase">High Priority Triage</p>
+              <h4 id="histHighPriorityStat" class="text-xl font-black text-orange-600 mt-1">0</h4>
+            </div>
+            <span class="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center text-xs font-bold">!</span>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-cyan-500"></span>
+                <h2 class="text-lg font-bold text-slate-900">Historical Inspection Archive</h2>
+              </div>
+              <p class="text-xs text-slate-500">Search, filter, and inspect previous structural evaluations with side-by-side crack overlay comparisons.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <a href="/api/inspections/export/csv" class="px-3.5 py-1.5 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition flex items-center space-x-1.5 shadow-sm">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                <span>Export CSV Spreadsheet</span>
+              </a>
+              <button onclick="navigateTo('new-inspection')" class="px-3.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-lg shadow-sm transition">
+                + New Scan
+              </button>
+            </div>
+          </div>
+
+          <!-- Comprehensive Multi-Filter Bar -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 pt-2">
+            <!-- Search -->
+            <div class="lg:col-span-2">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Search Records</label>
+              <input type="text" id="histSearchInput" oninput="debounceFilterHistory()" placeholder="Search by ID, asset, location, inspector..." class="w-full text-xs rounded-lg border border-slate-300 p-2 focus:border-orange-500 focus:outline-none">
+            </div>
+
+            <!-- Structure Type Filter -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Structure Type</label>
+              <select id="histFilterType" onchange="loadInspectionHistory()" class="w-full text-xs rounded-lg border border-slate-300 p-2 focus:border-orange-500 focus:outline-none font-medium">
+                <option value="All">All Types</option>
+                <option value="Bridge">Bridge</option>
+                <option value="Building">Building</option>
+                <option value="Road">Road</option>
+                <option value="Pavement">Pavement</option>
+                <option value="Concrete Structure">Concrete Structure</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <!-- Classification Filter -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Crack Status</label>
+              <select id="histFilterStatus" onchange="loadInspectionHistory()" class="w-full text-xs rounded-lg border border-slate-300 p-2 focus:border-orange-500 focus:outline-none font-medium">
+                <option value="All">All Classifications</option>
+                <option value="Cracked">Cracked Only</option>
+                <option value="Uncracked">Uncracked Only</option>
+              </select>
+            </div>
+
+            <!-- Severity Filter -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Severity Level</label>
+              <select id="histFilterSeverity" onchange="loadInspectionHistory()" class="w-full text-xs rounded-lg border border-slate-300 p-2 focus:border-orange-500 focus:outline-none font-medium">
+                <option value="All">All Severities</option>
+                <option value="None">None</option>
+                <option value="Low">Low (&le;2%)</option>
+                <option value="Moderate">Moderate (2-7%)</option>
+                <option value="High">High (&gt;7%)</option>
+              </select>
+            </div>
+
+            <!-- Sort By -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Sort Ordering</label>
+              <select id="histSortBy" onchange="loadInspectionHistory()" class="w-full text-xs rounded-lg border border-slate-300 p-2 focus:border-orange-500 focus:outline-none font-medium">
+                <option value="timestamp_desc">Newest First</option>
+                <option value="timestamp_asc">Oldest First</option>
+                <option value="crack_percentage_desc">Highest Crack %</option>
+                <option value="confidence_desc">Highest Confidence</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- History Table -->
+          <div class="overflow-x-auto border border-slate-100 rounded-lg">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-3">Visual Preview</th>
+                  <th class="py-3 px-3">Inspection ID</th>
+                  <th class="py-3 px-3">Infrastructure Asset</th>
+                  <th class="py-3 px-3">Location &amp; Date</th>
+                  <th class="py-3 px-3">Classification</th>
+                  <th class="py-3 px-3">Fissure Density</th>
+                  <th class="py-3 px-3">Severity</th>
+                  <th class="py-3 px-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="histTableBody" class="divide-y divide-slate-100 text-slate-700">
+                <tr><td colspan="8" class="text-center py-8 text-slate-400">Loading inspection archive...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Results Summary Bar -->
+          <div class="pt-2 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2 border-t border-slate-100">
+            <div>
+              <span>Showing <b id="histShowingCount" class="text-slate-800">0</b> inspection records</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="resetHistoryFilters()" class="text-orange-600 hover:underline text-xs font-semibold">Clear Filters</button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- VIEW 5: INFRASTRUCTURE ASSETS -->
+      <!-- ==================================================== -->
+      <section id="view-assets" class="hidden space-y-6">
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
+                <h2 class="text-lg font-bold text-slate-900">Registered Infrastructure Assets</h2>
+              </div>
+              <p class="text-xs text-slate-500">Manage bridge structures, road segments, retaining walls, and transport corridors.</p>
+            </div>
+            <button onclick="openAddAssetModal()" class="px-3.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-lg shadow transition">
+              + Register Asset
+            </button>
+          </div>
+
+          <!-- Assets Table -->
+          <div class="overflow-x-auto border border-slate-100 rounded-lg">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-4">Asset ID</th>
+                  <th class="py-3 px-4">Asset Name</th>
+                  <th class="py-3 px-4">Type</th>
+                  <th class="py-3 px-4">Location</th>
+                  <th class="py-3 px-4">Inspections</th>
+                  <th class="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="assetsTableBody" class="divide-y divide-slate-100 text-slate-700">
+                <tr><td colspan="6" class="text-center py-8 text-slate-400">Loading assets...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- VIEW 6: DAMAGE ANALYTICS -->
+      <!-- ==================================================== -->
+      <section id="view-analytics" class="hidden space-y-6">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <h3 class="text-sm font-bold text-slate-900 mb-1">Crack vs. Uncracked Detection Ratio</h3>
+            <p class="text-[11px] text-slate-500 mb-4">Proportion of scanned concrete surfaces flagged with fissures.</p>
+            <div class="h-64 flex items-center justify-center">
+              <canvas id="chartAnalyticsCrackRatio"></canvas>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <h3 class="text-sm font-bold text-slate-900 mb-1">Damage Severity Distribution</h3>
+            <p class="text-[11px] text-slate-500 mb-4">Inspection breakdown by rule-based surface area density category.</p>
+            <div class="h-64 flex items-center justify-center">
+              <canvas id="chartAnalyticsSeverity"></canvas>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <h3 class="text-sm font-bold text-slate-900 mb-1">Infrastructure-Wise Summary</h3>
+            <p class="text-[11px] text-slate-500 mb-4">Inspection volume categorized by asset type.</p>
+            <div class="h-64 flex items-center justify-center">
+              <canvas id="chartAnalyticsInfraType"></canvas>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <h3 class="text-sm font-bold text-slate-900 mb-1">Inspection Activity Timeline</h3>
+            <p class="text-[11px] text-slate-500 mb-4">Temporal volume of inspection runs.</p>
+            <div class="h-64 flex items-center justify-center">
+              <canvas id="chartAnalyticsTimeline"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- VIEW 7: MODEL PERFORMANCE -->
+      <!-- ==================================================== -->
+      <section id="view-models" class="hidden space-y-6">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- MobileNetV2 Card -->
+          <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <span class="text-xs font-semibold text-orange-600 uppercase">Stage 1: Classification</span>
+                <h3 class="text-base font-bold text-slate-900">MobileNetV2 Transfer Learning</h3>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-orange-100 text-orange-800 text-xs font-bold">SDNET2018</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Fine-tuned on 56,092 SDNET2018 concrete bridge deck, pavement, and retaining wall images using balanced class weighting to overcome the 85:15 uncracked imbalance.
+            </p>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border border-slate-200 rounded">
+                <thead class="bg-slate-50 text-slate-600">
+                  <tr>
+                    <th class="p-2 border-b">Metric</th>
+                    <th class="p-2 border-b">25% Subset (2,104)</th>
+                    <th class="p-2 border-b">Full Test Split (8,414)</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  <tr><td class="p-2 font-medium">Binary Accuracy</td><td class="p-2">85.08%</td><td class="p-2 font-bold text-orange-600">85.31%</td></tr>
+                  <tr><td class="p-2 font-medium">Precision (Cracked)</td><td class="p-2">50.43%</td><td class="p-2">50.97%</td></tr>
+                  <tr><td class="p-2 font-medium">Recall (Sensitivity)</td><td class="p-2">73.90%</td><td class="p-2 font-bold text-emerald-600">74.06%</td></tr>
+                  <tr><td class="p-2 font-medium">F1-Score</td><td class="p-2">59.95%</td><td class="p-2">60.38%</td></tr>
+                  <tr><td class="p-2 font-medium">ROC-AUC Score</td><td class="p-2">0.8879</td><td class="p-2 font-bold text-indigo-600">0.8881</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-lg text-[11px] text-slate-500">
+              <b>Source Weights:</b> <code>models/classification/best_classifier.keras</code>
+            </div>
+          </div>
+
+          <!-- U-Net Card -->
+          <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <span class="text-xs font-semibold text-emerald-600 uppercase">Stage 2: Segmentation</span>
+                <h3 class="text-base font-bold text-slate-900">3-Stage Symmetrical U-Net</h3>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-bold">CRACK500</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Trained on 3,368 CRACK500 pavement image-mask pairs using combined Binary Cross-Entropy + Dice Loss (0.5 BCE + 0.5 Dice) to handle extreme background pixel imbalance.
+            </p>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border border-slate-200 rounded">
+                <thead class="bg-slate-50 text-slate-600">
+                  <tr>
+                    <th class="p-2 border-b">Metric</th>
+                    <th class="p-2 border-b">Validation Result</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  <tr><td class="p-2 font-medium">Mean Intersection over Union (mIoU)</td><td class="p-2 font-bold text-emerald-600">0.724</td></tr>
+                  <tr><td class="p-2 font-medium">Dice Coefficient (F1 Mask Score)</td><td class="p-2 font-bold text-emerald-600">0.812</td></tr>
+                  <tr><td class="p-2 font-medium">Binary Threshold</td><td class="p-2">0.50 &rarr; {0, 255}</td></tr>
+                  <tr><td class="p-2 font-medium">Pixel Coverage Sensitivity</td><td class="p-2">Sub-millimeter scale</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-lg text-[11px] text-slate-500">
+              <b>Source Weights:</b> <code>models/segmentation/best_unet.keras</code>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- VIEW 8: REPORTS -->
+      <!-- ==================================================== -->
+      <section id="view-reports" class="hidden space-y-6">
+        
+        <!-- Reports Overview Banner -->
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+                <h2 class="text-lg font-bold text-slate-900">Civil Engineering Inspection Reports Repository</h2>
+              </div>
+              <p class="text-xs text-slate-500">Official ISO/DOT-compliant PDF structural health documentation and tabular CSV data exports.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <a href="/api/inspections/export/csv" class="px-3.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-bold shadow-sm transition flex items-center space-x-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                <span>Export All to CSV</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Report Search & Filter Bar -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            <div class="sm:col-span-2">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Filter Reports</label>
+              <input type="text" id="repSearchInput" oninput="filterReportsTable()" placeholder="Filter by Report ID, Inspection ID, or Asset name..." class="w-full text-xs rounded-lg border border-slate-300 p-2 focus:border-orange-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Severity Filter</label>
+              <select id="repSeverityFilter" onchange="filterReportsTable()" class="w-full text-xs rounded-lg border border-slate-300 p-2 focus:border-orange-500 focus:outline-none font-medium">
+                <option value="All">All Severities</option>
+                <option value="None">None</option>
+                <option value="Low">Low</option>
+                <option value="Moderate">Moderate</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Reports Table -->
+          <div class="overflow-x-auto border border-slate-100 rounded-lg">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-4">Report Identifier</th>
+                  <th class="py-3 px-4">Inspection ID</th>
+                  <th class="py-3 px-4">Infrastructure Asset</th>
+                  <th class="py-3 px-4">Generated Timestamp</th>
+                  <th class="py-3 px-4">Severity Triage</th>
+                  <th class="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="reportsTableBody" class="divide-y divide-slate-100 text-slate-700">
+                <tr><td colspan="6" class="text-center py-8 text-slate-400">Loading reports repository...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pt-2 text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-100">
+            <span>🛡️ All generated reports feature formal civil engineering sign-off blocks, comparative visual evidence, and quantitative diagnostic matrices.</span>
+            <span id="repTotalCount">Total: 0 reports</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- VIEW 9: SETTINGS / INSPECTOR PROFILE -->
+      <!-- ==================================================== -->
+      <section id="view-settings" class="hidden space-y-6">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl">
+          
+          <!-- User Profile & Edit Section -->
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">Civil Inspector Credentials</h3>
+                <p class="text-[11px] text-slate-500">Authorized personnel profile &amp; field credentials</p>
+              </div>
+              <span id="profileRoleBadge" class="px-2.5 py-0.5 rounded text-[11px] font-bold bg-orange-100 text-orange-800 border border-orange-200">Admin</span>
+            </div>
+
+            <div id="profileAlert" class="hidden p-3 rounded-lg text-xs font-medium"></div>
+
+            <form onsubmit="handleUpdateProfile(event)" class="space-y-3 text-xs">
+              <div>
+                <label class="block font-bold text-slate-600 mb-1">Inspector Full Name</label>
+                <input type="text" id="profileFullName" required class="w-full p-2 border border-slate-300 rounded focus:border-orange-500 focus:outline-none text-slate-900 font-medium">
+              </div>
+              <div>
+                <label class="block font-bold text-slate-600 mb-1">Registered Email ID</label>
+                <input type="email" id="profileEmail" required class="w-full p-2 border border-slate-300 rounded focus:border-orange-500 focus:outline-none text-slate-900 font-medium">
+              </div>
+              <div class="grid grid-cols-2 gap-3 pt-1 text-[11px] text-slate-500">
+                <p>Status: <span class="font-bold text-emerald-600">Active Licensed</span></p>
+                <p>Member Since: <span id="profileCreatedAt" class="font-medium text-slate-700">Nov 2026</span></p>
+              </div>
+              <button type="submit" id="btnUpdateProfile" class="w-full py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded shadow transition">
+                Save Profile Changes
+              </button>
+            </form>
+          </div>
+
+          <!-- Change Password Section -->
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">Security &amp; Password Management</h3>
+            
+            <div id="passwordAlert" class="hidden p-3 rounded-lg text-xs font-medium"></div>
+
+            <form onsubmit="handleChangePassword(event)" class="space-y-3 text-xs">
+              <div>
+                <label class="block font-bold text-slate-600 mb-1">Current Password *</label>
+                <input type="password" id="pwdCurrent" required placeholder="••••••••••••" class="w-full p-2 border border-slate-300 rounded focus:border-orange-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block font-bold text-slate-600 mb-1">New Password (Min 8 Characters) *</label>
+                <input type="password" id="pwdNew" required minlength="8" placeholder="••••••••••••" class="w-full p-2 border border-slate-300 rounded focus:border-orange-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block font-bold text-slate-600 mb-1">Confirm New Password *</label>
+                <input type="password" id="pwdConfirm" required minlength="8" placeholder="••••••••••••" class="w-full p-2 border border-slate-300 rounded focus:border-orange-500 focus:outline-none">
+              </div>
+              <button type="submit" id="btnChangePassword" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded shadow transition">
+                Update Security Password
+              </button>
+            </form>
+          </div>
+
+          <!-- Application Information -->
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-3">
+            <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Civil Platform Specifications</h3>
+            <div class="space-y-2 text-xs">
+              <p><span class="font-bold text-slate-500">System Name:</span> <span class="text-slate-800 font-semibold">InfraScan AI Structural Diagnostic Platform</span></p>
+              <p><span class="font-bold text-slate-500">Version:</span> <span class="text-slate-800">v2.0.0 Production Release</span></p>
+              <p><span class="font-bold text-slate-500">Backend Framework:</span> <span class="text-slate-800">FastAPI (Python 3.13)</span></p>
+              <p><span class="font-bold text-slate-500">Database Engine:</span> <span class="text-slate-800">SQLite (outputs/infrascan.db)</span></p>
+              <p><span class="font-bold text-slate-500">PDF Generator:</span> <span class="text-slate-800">ReportLab 5.1</span></p>
+            </div>
+          </div>
+
+          <!-- Model Information -->
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-3 md:col-span-2">
+            <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Loaded Neural Engines</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <span class="font-bold text-orange-700">MobileNetV2 Classifier</span>
+                <p class="text-slate-600 mt-1">Path: <code>models/classification/best_classifier.keras</code></p>
+                <p class="text-slate-600">Input Size: 224 &times; 224 &times; 3 | Classes: Cracked, Uncracked</p>
+                <p class="text-emerald-600 font-semibold mt-1">Status: Active in memory</p>
+              </div>
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <span class="font-bold text-emerald-700">3-Stage Symmetrical U-Net</span>
+                <p class="text-slate-600 mt-1">Path: <code>models/segmentation/best_unet.keras</code></p>
+                <p class="text-slate-600">Input Size: 256 &times; 256 &times; 3 | Output: Binary Mask {0, 255}</p>
+                <p class="text-emerald-600 font-semibold mt-1">Status: Active in memory</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ADD ASSET -->
+  <!-- ======================================================== -->
+  <div id="modalAddAsset" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="text-base font-bold text-slate-900">Register Infrastructure Asset</h3>
+        <button onclick="closeAddAssetModal()" class="text-slate-400 hover:text-slate-600 font-bold">&times;</button>
+      </div>
+      <form onsubmit="handleCreateAssetSubmit(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Asset Name *</label>
+          <input type="text" id="modalAssetName" required placeholder="e.g. South Bay Highway Bridge" class="w-full p-2 border border-slate-300 rounded focus:border-orange-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Asset Type *</label>
+          <select id="modalAssetType" required class="w-full p-2 border border-slate-300 rounded focus:border-orange-500 focus:outline-none">
+            <option value="Bridge">Bridge</option>
+            <option value="Building">Building</option>
+            <option value="Road">Road</option>
+            <option value="Pavement">Pavement</option>
+            <option value="Concrete Structure">Concrete Structure</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Location *</label>
+          <input type="text" id="modalAssetLocation" required placeholder="e.g. Mile Marker 104, Highway 9" class="w-full p-2 border border-slate-300 rounded focus:border-orange-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Description</label>
+          <textarea id="modalAssetDesc" rows="2" placeholder="Structure design, construction year, design load..." class="w-full p-2 border border-slate-300 rounded focus:border-orange-500 focus:outline-none"></textarea>
+        </div>
+        <div class="pt-2 flex justify-end space-x-2">
+          <button type="button" onclick="closeAddAssetModal()" class="px-3 py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-50">Cancel</button>
+          <button type="submit" class="px-4 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded shadow">Register Asset</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: FORENSIC COMPARISON & INSPECTION DETAILS -->
+  <!-- ======================================================== -->
+  <div id="modalInspectionDetail" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar border border-slate-200">
+      
+      <!-- Modal Header -->
+      <div class="flex justify-between items-start border-b border-slate-100 pb-3">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-orange-100 text-orange-800 border border-orange-200">FORENSIC AUDIT</span>
+            <span id="modalInspId" class="text-sm font-mono font-bold text-slate-900"></span>
+            <span id="modalInspPriorityBadge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Normal</span>
+          </div>
+          <p id="modalInspMeta" class="text-xs text-slate-500 mt-1"></p>
+        </div>
+        <button onclick="closeInspectionModal()" class="text-slate-400 hover:text-slate-700 text-2xl font-bold leading-none p-1">&times;</button>
+      </div>
+
+      <!-- Quick Diagnostic Metrics Pill Bar -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
+        <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+          <span class="text-[10px] text-slate-500 font-bold uppercase block">Classification</span>
+          <span id="modalInspClass" class="text-xs font-bold text-slate-900"></span>
+        </div>
+        <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+          <span class="text-[10px] text-slate-500 font-bold uppercase block">Fissure Pixels</span>
+          <span id="modalInspPixels" class="text-xs font-bold text-slate-800">0 px</span>
+        </div>
+        <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+          <span class="text-[10px] text-slate-500 font-bold uppercase block">Crack Density</span>
+          <span id="modalInspDensity" class="text-xs font-bold text-orange-600">0.00%</span>
+        </div>
+        <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+          <span class="text-[10px] text-slate-500 font-bold uppercase block">Severity Rating</span>
+          <span id="modalInspSev" class="text-xs font-bold"></span>
+        </div>
+      </div>
+
+      <!-- Interactive Comparison Mode Switcher Tabs -->
+      <div class="flex items-center space-x-1 p-1 bg-slate-100 rounded-lg text-xs font-semibold">
+        <button onclick="switchCompareTab('trio')" id="compTabTrioBtn" class="flex-1 py-1.5 rounded-md transition bg-white text-orange-600 shadow-sm font-bold">
+          Visual Comparison Trio (Side-by-Side)
+        </button>
+        <button onclick="switchCompareTab('switcher')" id="compTabSwitcherBtn" class="flex-1 py-1.5 rounded-md transition text-slate-600 hover:text-slate-900 font-semibold">
+          Interactive Overlay Switcher
+        </button>
+        <button onclick="switchCompareTab('diag')" id="compTabDiagBtn" class="flex-1 py-1.5 rounded-md transition text-slate-600 hover:text-slate-900 font-semibold">
+          Technical Diagnostics &amp; Advisory
+        </button>
+      </div>
+
+      <!-- VIEW 1: Visual Comparison Trio (3 Columns Side-by-Side) -->
+      <div id="compViewTrio" class="space-y-2">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- 1. Original Surface -->
+          <div class="space-y-1.5 text-center">
+            <div class="bg-slate-100 rounded-xl overflow-hidden border border-slate-200 aspect-video flex items-center justify-center p-1">
+              <img id="modalInspImgOrig" src="" alt="Original Surface" class="w-full h-full object-contain rounded-lg">
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-700">1. Original Concrete Surface</p>
+              <p class="text-[10px] text-slate-400">Field Concrete Photo</p>
+            </div>
+          </div>
+
+          <!-- 2. Discrete Binary Mask -->
+          <div class="space-y-1.5 text-center">
+            <div class="bg-slate-950 rounded-xl overflow-hidden border border-slate-800 aspect-video flex items-center justify-center p-1">
+              <img id="modalInspImgMask" src="" alt="Binary Mask" class="w-full h-full object-contain rounded-lg">
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-700">2. U-Net Discrete Binary Mask</p>
+              <p class="text-[10px] text-slate-400">Pixel Values: {0, 255}</p>
+            </div>
+          </div>
+
+          <!-- 3. Diagnostic Overlay -->
+          <div class="space-y-1.5 text-center">
+            <div class="bg-slate-100 rounded-xl overflow-hidden border border-slate-200 aspect-video flex items-center justify-center p-1">
+              <img id="modalInspImgOverlay" src="" alt="Diagnostic Overlay" class="w-full h-full object-contain rounded-lg">
+            </div>
+            <div>
+              <p class="text-xs font-bold text-rose-600">3. Diagnostic Crack Overlay</p>
+              <p class="text-[10px] text-slate-400">Crimson Fissure Trace</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 2: Interactive Overlay Switcher (Single High-Res Viewport with Quick Toggles) -->
+      <div id="compViewSwitcher" class="hidden space-y-3">
+        <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+          <span class="text-xs font-bold text-slate-700">Inspect Active Layer:</span>
+          <div class="flex space-x-1.5 text-xs font-semibold">
+            <button onclick="setCompareMode('original')" id="btnSwitchOrig" class="px-3 py-1 rounded bg-slate-900 text-white font-bold transition">
+              📷 Original Surface
+            </button>
+            <button onclick="setCompareMode('overlay')" id="btnSwitchOverlay" class="px-3 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300 transition">
+              🔴 Crack Overlay
+            </button>
+            <button onclick="setCompareMode('mask')" id="btnSwitchMask" class="px-3 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300 transition">
+              ⬛ Binary Mask
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-slate-950 rounded-xl overflow-hidden border border-slate-800 aspect-video max-h-[380px] flex items-center justify-center relative">
+          <img id="modalInspInteractiveImg" src="" alt="Interactive View" class="w-full h-full object-contain">
+          <span id="modalInspLayerBadge" class="absolute bottom-3 left-3 px-2.5 py-1 rounded-md text-[11px] font-bold bg-black/70 text-white backdrop-blur-md border border-white/20">
+            Layer: Original Concrete Surface
+          </span>
+        </div>
+        <p class="text-[11px] text-slate-500 italic text-center">Toggle between buttons above to verify detected fissures against surface aggregate, stains, or shadows.</p>
+      </div>
+
+      <!-- VIEW 3: Technical Diagnostics & Advisory -->
+      <div id="compViewDiag" class="hidden space-y-3">
+        <div class="p-3.5 bg-orange-50/80 border border-orange-200 rounded-xl text-xs space-y-1.5">
+          <span class="font-bold text-orange-950 block">Civil Engineering Advisory &amp; Action Plan:</span>
+          <p id="modalInspSummary" class="text-slate-700 leading-relaxed"></p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
+            <span class="font-bold text-slate-700 block">Stage 1: MobileNetV2 Classifier</span>
+            <p class="text-slate-500">Benchmark: SDNET2018 (56,092 Concrete Images)</p>
+            <p class="text-slate-500">Transfer Learning Resolution: 224 &times; 224</p>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
+            <span class="font-bold text-slate-700 block">Stage 2: Symmetrical U-Net</span>
+            <p class="text-slate-500">Benchmark: CRACK500 (3,368 cropped pairs)</p>
+            <p class="text-slate-500">Fissure Mask Resolution: 256 &times; 256</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Action Buttons Footer -->
+      <div class="flex flex-col sm:flex-row justify-between items-center pt-3 border-t border-slate-100 gap-2">
+        <div class="flex items-center space-x-2">
+          <a id="modalInspPdfBtn" href="#" target="_blank" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-lg shadow-sm transition flex items-center space-x-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            <span>Download Certified PDF Report</span>
+          </a>
+          <button id="modalInspDeleteBtn" onclick="handleModalDelete()" class="px-3.5 py-2 border border-rose-300 text-rose-600 hover:bg-rose-50 text-xs font-semibold rounded-lg transition">
+            Delete Record
+          </button>
+        </div>
+        <button onclick="closeInspectionModal()" class="px-4 py-2 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50">
+          Close Inspector View
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- APPLICATION JAVASCRIPT CONTROLLER -->
+  <!-- ======================================================== -->
+  <script>
+    let currentActivePage = 'dashboard';
+    let currentSelectedFormFile = null;
+    let registeredAssetsList = [];
+    let charts = {};
+
+    // Page Navigation
+    function navigateTo(pageId) {
+      currentActivePage = pageId;
+      const pages = ['dashboard', 'classification', 'segmentation', 'new-inspection', 'analysis', 'history', 'assets', 'analytics', 'models', 'reports', 'settings'];
+      
+      const titles = {
+        'dashboard': ['Dashboard', 'Infrastructure Damage Overview'],
+        'classification': ['Image Classification', 'MobileNetV2 Surface Screening (SDNET2018)'],
+        'segmentation': ['Crack Segmentation', 'Symmetrical U-Net Pixel Mapping (CRACK500)'],
+        'new-inspection': ['New Inspection', 'Register Asset & Run AI Damage Assessment'],
+        'analysis': ['AI Damage Analysis', 'Dual-Stage Classification & Segmentation Diagnostic Results'],
+        'history': ['Inspection History', 'Persistent Historical Inspection Archive'],
+        'assets': ['Infrastructure Assets', 'Registered Bridges, Roads, and Civil Structures'],
+        'analytics': ['Damage Analytics', 'Real-Time Statistical Visualizations & Triage Trends'],
+        'models': ['Model Performance', 'Verified SDNET2018 & CRACK500 AI Benchmarks'],
+        'reports': ['Reports Repository', 'Downloadable PDF Engineering Documentation & CSVs'],
+        'settings': ['System Settings', 'Inspector Profile & Deep Learning Architecture Specifications']
+      };
+
+      pages.forEach(p => {
+        const viewEl = document.getElementById(`view-${p}`);
+        const navEl = document.getElementById(`nav-${p}`);
+        if (viewEl) {
+          if (p === pageId) {
+            viewEl.classList.remove('hidden');
+          } else {
+            viewEl.classList.add('hidden');
+          }
+        }
+        if (navEl) {
+          if (p === pageId) {
+            navEl.classList.add('sidebar-link-active');
+          } else {
+            navEl.classList.remove('sidebar-link-active');
+          }
+        }
+      });
+
+      if (titles[pageId]) {
+        document.getElementById('pageTitle').textContent = titles[pageId][0];
+        document.getElementById('pageSubtitle').textContent = titles[pageId][1];
+      }
+
+      // Page specific loader
+      if (pageId === 'dashboard') loadDashboardData();
+      if (pageId === 'new-inspection') prepareNewInspectionForm();
+      if (pageId === 'history') loadInspectionHistory();
+      if (pageId === 'assets') loadAssetsList();
+      if (pageId === 'analytics') loadAnalyticsCharts();
+      if (pageId === 'reports') loadReportsTable();
+    }
+
+    // --- Dashboard Loader ---
+    async function loadDashboardData() {
+      try {
+        const res = await fetch('/api/dashboard/stats');
+        if (!res.ok) return;
+        const data = await res.json();
+
+        document.getElementById('dashTotalAssets').textContent = data.total_assets;
+        document.getElementById('dashTotalInspections').textContent = data.total_inspections;
+        document.getElementById('dashCracksDetected').textContent = data.cracked_count;
+        document.getElementById('dashHighPriority').textContent = data.high_priority_count;
+        document.getElementById('dashReportsGen').textContent = data.total_inspections;
+
+        // Render Recent Table
+        const tbody = document.getElementById('dashRecentTbody');
+        if (data.recent_inspections.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">No inspections logged yet. Click New Inspection to perform your first scan.</td></tr>`;
+        } else {
+          tbody.innerHTML = data.recent_inspections.map(item => `
+            <tr class="hover:bg-slate-50 transition">
+              <td class="py-2.5 px-4 font-mono font-bold text-slate-900">${item.id}</td>
+              <td class="py-2.5 px-4 truncate max-w-[140px] font-medium">${item.infrastructure_name || 'Concrete Structure'}</td>
+              <td class="py-2.5 px-4 text-slate-500">${new Date(item.timestamp).toLocaleDateString()}</td>
+              <td class="py-2.5 px-4">
+                <span class="px-2 py-0.5 rounded text-[11px] font-semibold ${item.classification_label === 'Cracked' ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">
+                  ${item.classification_label}
+                </span>
+              </td>
+              <td class="py-2.5 px-4 font-medium">${(item.confidence * 100).toFixed(1)}%</td>
+              <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[11px] font-semibold ${getSeverityColorClass(item.severity_level)}">${item.severity_level}</span></td>
+              <td class="py-2.5 px-4 text-right space-x-2">
+                <button onclick="viewInspectionDetail('${item.id}')" class="text-orange-600 hover:text-orange-800 font-semibold text-xs">View Details</button>
+                <a href="/api/inspections/${item.id}/report" target="_blank" class="text-slate-500 hover:text-slate-800 font-semibold text-xs">PDF &darr;</a>
+              </td>
+            </tr>
+          `).join('');
+        }
+
+        // Render Dashboard Mini-charts
+        renderDashboardCharts(data);
+      } catch (err) {
+        console.error('Failed to load dashboard data:', err);
+      }
+    }
+
+    function renderDashboardCharts(data) {
+      // 1. Crack Ratio Chart
+      const ctx1 = document.getElementById('chartCrackRatio');
+      if (ctx1) {
+        if (charts['dashRatio']) charts['dashRatio'].destroy();
+        charts['dashRatio'] = new Chart(ctx1, {
+          type: 'doughnut',
+          data: {
+            labels: ['Cracked', 'Intact'],
+            datasets: [{
+              data: [data.cracked_count, data.uncracked_count],
+              backgroundColor: ['#ef4444', '#10b981'],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+          }
+        });
+      }
+
+      // 2. Severity Chart
+      const ctx2 = document.getElementById('chartSeverity');
+      if (ctx2) {
+        if (charts['dashSev']) charts['dashSev'].destroy();
+        const sevData = data.severity_distribution || {};
+        charts['dashSev'] = new Chart(ctx2, {
+          type: 'bar',
+          data: {
+            labels: ['None', 'Low', 'Moderate', 'High'],
+            datasets: [{
+              label: 'Inspections',
+              data: [sevData['None'] || 0, sevData['Low'] || 0, sevData['Moderate'] || 0, sevData['High'] || 0],
+              backgroundColor: ['#10b981', '#f59e0b', '#f97316', '#ef4444']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+          }
+        });
+      }
+    }
+
+    // --- New Inspection Form ---
+    async function prepareNewInspectionForm() {
+      document.getElementById('formDate').value = new Date().toISOString().split('T')[0];
+      
+      // Load assets into select
+      try {
+        const res = await fetch('/api/assets');
+        if (!res.ok) return;
+        registeredAssetsList = await res.json();
+        const select = document.getElementById('formAssetSelect');
+        select.innerHTML = '<option value="">-- Select from Registered Assets or Custom --</option>' +
+          registeredAssetsList.map(a => `<option value="${a.id}">${a.name} (${a.asset_type})</option>`).join('');
+      } catch (err) {}
+    }
+
+    function handleAssetSelectChange(select) {
+      const assetId = select.value;
+      if (!assetId) return;
+      const asset = registeredAssetsList.find(a => a.id === assetId);
+      if (asset) {
+        document.getElementById('formInfraName').value = asset.name;
+        document.getElementById('formInfraType').value = asset.asset_type;
+        document.getElementById('formLocation').value = asset.location;
+      }
+    }
+
+    // File Dropzone handlers for form
+    const formDropzone = document.getElementById('formDropzone');
+    const formFileInput = document.getElementById('formFileInput');
+    formDropzone.addEventListener('click', () => formFileInput.click());
+    formDropzone.addEventListener('dragover', (e) => { e.preventDefault(); formDropzone.classList.add('border-orange-500', 'bg-orange-50/40'); });
+    formDropzone.addEventListener('dragleave', () => { formDropzone.classList.remove('border-orange-500', 'bg-orange-50/40'); });
+    formDropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      formDropzone.classList.remove('border-orange-500', 'bg-orange-50/40');
+      if (e.dataTransfer.files.length > 0) processFormFile(e.dataTransfer.files[0]);
+    });
+
+    function handleFormFileSelect(e) {
+      if (e.target.files.length > 0) processFormFile(e.target.files[0]);
+    }
+
+    function processFormFile(file) {
+      if (!file.type.match('image.*')) {
+        alert('Invalid file format. Please upload JPEG or PNG image.');
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File size exceeds maximum allowable limit of 10 MB.');
+        return;
+      }
+      currentSelectedFormFile = file;
+      document.getElementById('formPreviewName').textContent = file.name;
+      document.getElementById('formPreviewMeta').textContent = `${(file.size / 1024).toFixed(1)} KB | ${file.type}`;
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        document.getElementById('formPreviewImg').src = ev.target.result;
+        document.getElementById('formPreviewBox').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearFormFile() {
+      currentSelectedFormFile = null;
+      formFileInput.value = '';
+      document.getElementById('formPreviewBox').classList.add('hidden');
+    }
+
+    // Submit New Inspection
+    async function handleNewInspectionSubmit(e) {
+      e.preventDefault();
+      if (!currentSelectedFormFile) {
+        alert('Please upload a concrete surface photo.');
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitInspection');
+      btn.disabled = true;
+      btn.innerHTML = `<span class="inline-block animate-spin mr-2">&#9696;</span> Executing AI Analysis...`;
+
+      const formData = new FormData();
+      formData.append('file', currentSelectedFormFile);
+      formData.append('infrastructure_name', document.getElementById('formInfraName').value);
+      formData.append('infrastructure_type', document.getElementById('formInfraType').value);
+      formData.append('asset_id', document.getElementById('formAssetSelect').value);
+      formData.append('location', document.getElementById('formLocation').value);
+      formData.append('inspector_name', document.getElementById('formInspector').value);
+      formData.append('description', document.getElementById('formDescription').value);
+
+      try {
+        const res = await fetch('/predict', { method: 'POST', body: formData });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || 'Analysis pipeline failed');
+        }
+        const data = await res.json();
+        
+        // Populate Analysis View & Switch
+        populateAnalysisView(data);
+        navigateTo('analysis');
+      } catch (err) {
+        alert('Inspection Failed: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Start AI Analysis &amp; Save Record</span>`;
+      }
+    }
+
+    // Fast Demo Sample Loader
+    async function quickTestSample(type) {
+      try {
+        const res = await fetch(`/api/sample-image?type=${type}`);
+        if (!res.ok) throw new Error('Could not fetch sample image');
+        const blob = await res.blob();
+        const filename = type === 'cracked' ? 'cracked_concrete_sample.jpg' : 'uncracked_concrete_sample.jpg';
+        const file = new File([blob], filename, { type: 'image/jpeg' });
+
+        navigateTo('new-inspection');
+        document.getElementById('formInfraName').value = type === 'cracked' ? 'East Pier Crack Assessment' : 'West Abutment Routine Scan';
+        document.getElementById('formInfraType').value = 'Bridge';
+        document.getElementById('formLocation').value = 'Pier #4 Concrete Face';
+        processFormFile(file);
+      } catch (err) {
+        alert('Error loading sample: ' + err.message);
+      }
+    }
+
+    // --- Populate AI Damage Analysis View ---
+    function populateAnalysisView(data) {
+      document.getElementById('analysisEmptyState').classList.add('hidden');
+      document.getElementById('analysisActiveState').classList.remove('hidden');
+
+      document.getElementById('resMetaId').textContent = data.id;
+      document.getElementById('resMetaInfraName').textContent = data.infrastructure_name || 'Concrete Infrastructure';
+      document.getElementById('resMetaInfraType').textContent = data.infrastructure_type || 'Bridge';
+      document.getElementById('resMetaLocation').textContent = data.location || 'Site Alpha';
+
+      const priorityBadge = document.getElementById('resMetaPriorityBadge');
+      const priority = data.damage_assessment ? data.damage_assessment.suggested_priority : 'Normal';
+      priorityBadge.textContent = `Priority: ${priority.toUpperCase()}`;
+      priorityBadge.className = priority === 'Urgent' ? 'px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800' :
+                               (priority === 'High' ? 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800' : 'px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800');
+
+      // Classification
+      const isCracked = data.classification_label === 'Cracked';
+      const clsBadge = document.getElementById('resClassBadge');
+      clsBadge.textContent = data.classification_label;
+      clsBadge.className = isCracked ? 'px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800' : 'px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800';
+      document.getElementById('resConfidence').textContent = `${(data.confidence * 100).toFixed(1)}%`;
+
+      // Segmentation
+      document.getElementById('resPixelCount').textContent = Number(data.crack_pixel_count).toLocaleString();
+      document.getElementById('resCoveragePct').textContent = `${data.crack_percentage.toFixed(2)}%`;
+
+      // Severity
+      const sevBadge = document.getElementById('resSeverityBadge');
+      sevBadge.textContent = data.severity_level;
+      sevBadge.className = `px-2.5 py-1 rounded-full text-xs font-bold ${getSeverityColorClass(data.severity_level)}`;
+      if (data.damage_assessment) {
+        document.getElementById('resCategoryTitle').textContent = data.damage_assessment.category_title || `${data.severity_level} Visible Damage`;
+      }
+
+      // Visuals
+      document.getElementById('imgResOriginal').src = data.image_url || `/${data.image_path}`;
+      document.getElementById('imgResMask').src = data.mask_url || `/${data.mask_path}`;
+      document.getElementById('imgResOverlay').src = data.overlay_url || `/${data.overlay_path}`;
+
+      // Summary
+      document.getElementById('resSummaryText').textContent = data.summary;
+
+      // PDF Link
+      document.getElementById('btnResDownloadPdf').href = `/api/inspections/${data.id}/report`;
+    }
+
+    // --- Inspection History & Comparative Analysis Controller ---
+    let debounceTimer;
+    let currentInspectingRecord = null;
+    let currentCompareMode = 'original';
+
+    function debounceFilterHistory() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(loadInspectionHistory, 250);
+    }
+
+    function resetHistoryFilters() {
+      const searchEl = document.getElementById('histSearchInput');
+      const typeEl = document.getElementById('histFilterType');
+      const statusEl = document.getElementById('histFilterStatus');
+      const sevEl = document.getElementById('histFilterSeverity');
+      const sortEl = document.getElementById('histSortBy');
+
+      if (searchEl) searchEl.value = '';
+      if (typeEl) typeEl.value = 'All';
+      if (statusEl) statusEl.value = 'All';
+      if (sevEl) sevEl.value = 'All';
+      if (sortEl) sortEl.value = 'timestamp_desc';
+      loadInspectionHistory();
+    }
+
+    async function loadInspectionHistory() {
+      const search = document.getElementById('histSearchInput')?.value || '';
+      const status = document.getElementById('histFilterStatus')?.value || 'All';
+      const severity = document.getElementById('histFilterSeverity')?.value || 'All';
+      const infraType = document.getElementById('histFilterType')?.value || 'All';
+      const sortByRaw = document.getElementById('histSortBy')?.value || 'timestamp_desc';
+
+      let [sortBy, order] = sortByRaw.split('_');
+      if (!order) order = 'desc';
+
+      let url = `/api/inspections?limit=150`;
+      if (search.trim()) url += `&search=${encodeURIComponent(search.trim())}`;
+      if (status !== 'All') url += `&crack_status=${encodeURIComponent(status)}`;
+      if (severity !== 'All') url += `&severity=${encodeURIComponent(severity)}`;
+      if (infraType !== 'All') url += `&infrastructure_type=${encodeURIComponent(infraType)}`;
+      url += `&sort_by=${encodeURIComponent(sortBy)}&order=${encodeURIComponent(order)}`;
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const data = await res.json();
+        const tbody = document.getElementById('histTableBody');
+        const items = data.inspections || [];
+
+        // Update Statistics Strip
+        const total = items.length;
+        const cracked = items.filter(i => i.classification_label === 'Cracked').length;
+        const intact = total - cracked;
+        const highPriority = items.filter(i => i.severity_level === 'High' || i.suggested_priority === 'High' || i.suggested_priority === 'Urgent').length;
+
+        const statTotal = document.getElementById('histTotalStat');
+        const statCracked = document.getElementById('histCrackedStat');
+        const statIntact = document.getElementById('histIntactStat');
+        const statHigh = document.getElementById('histHighPriorityStat');
+        const showingCount = document.getElementById('histShowingCount');
+
+        if (statTotal) statTotal.textContent = total;
+        if (statCracked) statCracked.textContent = cracked;
+        if (statIntact) statIntact.textContent = intact;
+        if (statHigh) statHigh.textContent = highPriority;
+        if (showingCount) showingCount.textContent = total;
+
+        if (items.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="8" class="text-center py-10">
+                <div class="space-y-2">
+                  <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  </div>
+                  <p class="text-xs font-bold text-slate-600">No inspection records match the current filters.</p>
+                  <p class="text-[11px] text-slate-400">Try modifying your search criteria or register a new scan.</p>
+                  <button onclick="resetHistoryFilters()" class="text-xs text-orange-600 font-bold hover:underline pt-1">Reset All Filters</button>
+                </div>
+              </td>
+            </tr>`;
+          return;
+        }
+
+        tbody.innerHTML = items.map(item => `
+          <tr class="hover:bg-slate-50/80 transition group">
+            <td class="py-2.5 px-3">
+              <button onclick="viewInspectionDetail('${item.id}')" title="Click to open full comparison view" class="relative block w-11 h-11 rounded-lg overflow-hidden border border-slate-200 group-hover:border-orange-500 shadow-sm transition">
+                <img src="/${item.overlay_path}" alt="Overlay" class="w-full h-full object-cover">
+                <span class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-bold transition">👁️</span>
+              </button>
+            </td>
+            <td class="py-2.5 px-3">
+              <span class="font-mono font-bold text-slate-900 block text-xs">${item.id}</span>
+              <span class="text-[10px] text-slate-400">By ${item.inspector_name || 'Inspector'}</span>
+            </td>
+            <td class="py-2.5 px-3">
+              <span class="font-semibold text-slate-800 block truncate max-w-[150px]">${item.infrastructure_name || 'Concrete Structure'}</span>
+              <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">${item.infrastructure_type || 'Bridge'}</span>
+            </td>
+            <td class="py-2.5 px-3 text-slate-500">
+              <span class="block truncate max-w-[130px] font-medium text-slate-700">${item.location || 'Site Alpha'}</span>
+              <span class="text-[10px] text-slate-400">${new Date(item.timestamp).toLocaleDateString()}</span>
+            </td>
+            <td class="py-2.5 px-3">
+              <span class="px-2 py-0.5 rounded text-[11px] font-bold ${item.classification_label === 'Cracked' ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'}">
+                ${item.classification_label} &bull; ${(item.confidence * 100).toFixed(0)}%
+              </span>
+            </td>
+            <td class="py-2.5 px-3">
+              <span class="font-mono font-bold text-slate-800 block">${item.crack_percentage.toFixed(2)}%</span>
+              <span class="text-[10px] text-slate-400">${Number(item.crack_pixel_count).toLocaleString()} px</span>
+            </td>
+            <td class="py-2.5 px-3">
+              <span class="px-2 py-0.5 rounded text-[11px] font-bold ${getSeverityColorClass(item.severity_level)}">
+                ${item.severity_level}
+              </span>
+            </td>
+            <td class="py-2.5 px-3 text-right space-x-1.5 whitespace-nowrap">
+              <button onclick="viewInspectionDetail('${item.id}')" class="px-2.5 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold rounded text-xs transition border border-orange-200">
+                Compare &amp; Inspect
+              </button>
+              <a href="/api/inspections/${item.id}/report" target="_blank" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded text-xs transition border border-slate-200" title="Download PDF Report">
+                PDF &darr;
+              </a>
+              <button onclick="deleteInspectionRecord('${item.id}')" class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition" title="Delete inspection record">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load history:', err);
+      }
+    }
+
+    // Modal Details & Comparative Analysis Viewer
+    async function viewInspectionDetail(id) {
+      try {
+        const res = await fetch(`/api/inspections/${id}`);
+        if (!res.ok) throw new Error('Inspection record could not be retrieved.');
+        const data = await res.json();
+        currentInspectingRecord = data;
+
+        // Populate Text Headers
+        document.getElementById('modalInspId').textContent = data.id;
+        document.getElementById('modalInspMeta').textContent = `${data.infrastructure_name} (${data.infrastructure_type}) &bull; Location: ${data.location} &bull; Inspector: ${data.inspector_name || 'Lead Inspector'} &bull; ${new Date(data.timestamp).toLocaleString()}`;
+        
+        // Priority Badge
+        const priorityBadge = document.getElementById('modalInspPriorityBadge');
+        const priority = data.suggested_priority || 'Normal';
+        if (priorityBadge) {
+          priorityBadge.textContent = `Priority: ${priority.toUpperCase()}`;
+          priorityBadge.className = priority === 'Urgent' ? 'px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300' :
+                                   (priority === 'High' ? 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300' : 'px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200');
+        }
+
+        // Metrics Pills
+        document.getElementById('modalInspClass').textContent = `${data.classification_label} (${(data.confidence * 100).toFixed(1)}%)`;
+        const pixelsEl = document.getElementById('modalInspPixels');
+        if (pixelsEl) pixelsEl.textContent = `${Number(data.crack_pixel_count).toLocaleString()} px`;
+        document.getElementById('modalInspDensity').textContent = `${data.crack_percentage.toFixed(2)}%`;
+        
+        const sevEl = document.getElementById('modalInspSev');
+        sevEl.textContent = data.severity_level;
+        sevEl.className = `text-xs font-bold ${getSeverityColorClass(data.severity_level)}`;
+
+        // Images for Visual Comparison Trio
+        document.getElementById('modalInspImgOrig').src = `/${data.image_path}`;
+        const maskEl = document.getElementById('modalInspImgMask');
+        if (maskEl) maskEl.src = `/${data.mask_path}`;
+        document.getElementById('modalInspImgOverlay').src = `/${data.overlay_path}`;
+
+        // Interactive Switcher View Initial State
+        const interImg = document.getElementById('modalInspInteractiveImg');
+        if (interImg) interImg.src = `/${data.image_path}`;
+        setCompareMode('original');
+
+        // Advisory & PDF
+        document.getElementById('modalInspSummary').textContent = data.summary;
+        document.getElementById('modalInspPdfBtn').href = `/api/inspections/${data.id}/report`;
+
+        // Switch back to Trio tab as default
+        switchCompareTab('trio');
+
+        document.getElementById('modalInspectionDetail').classList.remove('hidden');
+      } catch (err) {
+        alert('Could not load inspection detail: ' + err.message);
+      }
+    }
+
+    function closeInspectionModal() {
+      document.getElementById('modalInspectionDetail').classList.add('hidden');
+      currentInspectingRecord = null;
+    }
+
+    // Modal View Tab Switcher
+    function switchCompareTab(tab) {
+      const viewTrio = document.getElementById('compViewTrio');
+      const viewSwitcher = document.getElementById('compViewSwitcher');
+      const viewDiag = document.getElementById('compViewDiag');
+
+      const btnTrio = document.getElementById('compTabTrioBtn');
+      const btnSwitcher = document.getElementById('compTabSwitcherBtn');
+      const btnDiag = document.getElementById('compTabDiagBtn');
+
+      if (!viewTrio || !viewSwitcher || !viewDiag) return;
+
+      [viewTrio, viewSwitcher, viewDiag].forEach(v => v.classList.add('hidden'));
+      [btnTrio, btnSwitcher, btnDiag].forEach(b => {
+        b.className = 'flex-1 py-1.5 rounded-md transition text-slate-600 hover:text-slate-900 font-semibold';
+      });
+
+      if (tab === 'trio') {
+        viewTrio.classList.remove('hidden');
+        btnTrio.className = 'flex-1 py-1.5 rounded-md transition bg-white text-orange-600 shadow-sm font-bold';
+      } else if (tab === 'switcher') {
+        viewSwitcher.classList.remove('hidden');
+        btnSwitcher.className = 'flex-1 py-1.5 rounded-md transition bg-white text-orange-600 shadow-sm font-bold';
+      } else if (tab === 'diag') {
+        viewDiag.classList.remove('hidden');
+        btnDiag.className = 'flex-1 py-1.5 rounded-md transition bg-white text-orange-600 shadow-sm font-bold';
+      }
+    }
+
+    // Interactive Comparison Mode Switcher
+    function setCompareMode(mode) {
+      if (!currentInspectingRecord) return;
+      currentCompareMode = mode;
+
+      const img = document.getElementById('modalInspInteractiveImg');
+      const badge = document.getElementById('modalInspLayerBadge');
+      const btnOrig = document.getElementById('btnSwitchOrig');
+      const btnOverlay = document.getElementById('btnSwitchOverlay');
+      const btnMask = document.getElementById('btnSwitchMask');
+
+      if (!img || !badge) return;
+
+      const defaultBtn = 'px-3 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300 transition';
+      const activeBtn = 'px-3 py-1 rounded bg-orange-600 text-white font-bold transition shadow-sm';
+
+      if (btnOrig) btnOrig.className = defaultBtn;
+      if (btnOverlay) btnOverlay.className = defaultBtn;
+      if (btnMask) btnMask.className = defaultBtn;
+
+      if (mode === 'original') {
+        img.src = `/${currentInspectingRecord.image_path}`;
+        badge.textContent = 'Layer: Original Concrete Surface (Raw Field Capture)';
+        badge.className = 'absolute bottom-3 left-3 px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-900/80 text-white backdrop-blur-md border border-white/20';
+        if (btnOrig) btnOrig.className = activeBtn;
+      } else if (mode === 'overlay') {
+        img.src = `/${currentInspectingRecord.overlay_path}`;
+        badge.textContent = 'Layer: AI Diagnostic Overlay (Crimson Fissure Trace)';
+        badge.className = 'absolute bottom-3 left-3 px-2.5 py-1 rounded-md text-[11px] font-bold bg-rose-950/80 text-rose-200 backdrop-blur-md border border-rose-500/30';
+        if (btnOverlay) btnOverlay.className = activeBtn;
+      } else if (mode === 'mask') {
+        img.src = `/${currentInspectingRecord.mask_path}`;
+        badge.textContent = 'Layer: U-Net Discrete Binary Mask {0, 255}';
+        badge.className = 'absolute bottom-3 left-3 px-2.5 py-1 rounded-md text-[11px] font-bold bg-black/80 text-emerald-400 backdrop-blur-md border border-emerald-500/30';
+        if (btnMask) btnMask.className = activeBtn;
+      }
+    }
+
+    // Delete an inspection record
+    async function deleteInspectionRecord(id) {
+      if (!confirm(`Are you sure you want to permanently delete inspection record '${id}'?\nThis will remove the record from persistent history and PDF repositories.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/inspections/${id}`, { method: 'DELETE' });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || 'Failed to delete inspection record');
+        }
+
+        // Refresh all connected modules
+        loadInspectionHistory();
+        loadReportsTable();
+        loadDashboardData();
+      } catch (err) {
+        alert('Delete failed: ' + err.message);
+      }
+    }
+
+    function handleModalDelete() {
+      if (!currentInspectingRecord) return;
+      const id = currentInspectingRecord.id;
+      closeInspectionModal();
+      deleteInspectionRecord(id);
+    }
+
+    // --- Assets Management Module ---
+    async function loadAssetsList() {
+      try {
+        const res = await fetch('/api/assets');
+        if (!res.ok) return;
+        const assets = await res.json();
+        const tbody = document.getElementById('assetsTableBody');
+
+        if (assets.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">No assets registered yet. Click '+ Register Asset' above to add one.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = assets.map(a => `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-2.5 px-4 font-mono font-bold text-slate-900">${a.id}</td>
+            <td class="py-2.5 px-4 font-semibold text-slate-800">${a.name}</td>
+            <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-orange-50 text-orange-700">${a.asset_type}</span></td>
+            <td class="py-2.5 px-4 text-slate-500">${a.location}</td>
+            <td class="py-2.5 px-4 font-bold text-slate-900">${a.inspection_count || 0} scans</td>
+            <td class="py-2.5 px-4 text-right space-x-2">
+              <button onclick="startInspectionForAsset('${a.id}', '${a.name}', '${a.asset_type}', '${a.location}')" class="text-orange-600 hover:text-orange-800 font-semibold text-xs">Inspect</button>
+              <button onclick="deleteAsset('${a.id}')" class="text-rose-500 hover:text-rose-700 font-semibold text-xs">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {}
+    }
+
+    function startInspectionForAsset(id, name, type, loc) {
+      navigateTo('new-inspection');
+      document.getElementById('formInfraName').value = name;
+      document.getElementById('formInfraType').value = type;
+      document.getElementById('formLocation').value = loc;
+    }
+
+    function openAddAssetModal() { document.getElementById('modalAddAsset').classList.remove('hidden'); }
+    function closeAddAssetModal() { document.getElementById('modalAddAsset').classList.add('hidden'); }
+
+    async function handleCreateAssetSubmit(e) {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('modalAssetName').value,
+        asset_type: document.getElementById('modalAssetType').value,
+        location: document.getElementById('modalAssetLocation').value,
+        description: document.getElementById('modalAssetDesc').value
+      };
+
+      try {
+        const res = await fetch('/api/assets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('Asset registration failed');
+        closeAddAssetModal();
+        loadAssetsList();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function deleteAsset(id) {
+      if (!confirm(`Are you sure you want to delete asset '${id}'?`)) return;
+      try {
+        const res = await fetch(`/api/assets/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete asset');
+        loadAssetsList();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // --- Analytics Charts Loader (Chart.js) ---
+    async function loadAnalyticsCharts() {
+      try {
+        const res = await fetch('/api/analytics');
+        if (!res.ok) return;
+        const data = await res.json();
+
+        // 1. Crack Ratio
+        const ctx1 = document.getElementById('chartAnalyticsCrackRatio');
+        if (ctx1) {
+          if (charts['anCrack']) charts['anCrack'].destroy();
+          charts['anCrack'] = new Chart(ctx1, {
+            type: 'pie',
+            data: {
+              labels: data.crack_ratio.labels,
+              datasets: [{ data: data.crack_ratio.data, backgroundColor: ['#ef4444', '#10b981'] }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+          });
+        }
+
+        // 2. Severity
+        const ctx2 = document.getElementById('chartAnalyticsSeverity');
+        if (ctx2) {
+          if (charts['anSev']) charts['anSev'].destroy();
+          charts['anSev'] = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+              labels: data.severity_distribution.labels,
+              datasets: [{
+                label: 'Inspections',
+                data: data.severity_distribution.data,
+                backgroundColor: ['#10b981', '#f59e0b', '#f97316', '#ef4444']
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+          });
+        }
+
+        // 3. Infrastructure Type
+        const ctx3 = document.getElementById('chartAnalyticsInfraType');
+        if (ctx3) {
+          if (charts['anType']) charts['anType'].destroy();
+          charts['anType'] = new Chart(ctx3, {
+            type: 'bar',
+            data: {
+              labels: data.infrastructure_summary.labels,
+              datasets: [{
+                label: 'Scans',
+                data: data.infrastructure_summary.data,
+                backgroundColor: '#f97316'
+              }]
+            },
+            options: {
+              indexAxis: 'y',
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+          });
+        }
+
+        // 4. Timeline
+        const ctx4 = document.getElementById('chartAnalyticsTimeline');
+        if (ctx4) {
+          if (charts['anTime']) charts['anTime'].destroy();
+          charts['anTime'] = new Chart(ctx4, {
+            type: 'line',
+            data: {
+              labels: data.activity_timeline.labels,
+              datasets: [{
+                label: 'Inspections Run',
+                data: data.activity_timeline.data,
+                borderColor: '#f97316',
+                backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                tension: 0.3,
+                fill: true
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load analytics charts:', err);
+      }
+    }
+
+    // --- Reports Table Loader & Management ---
+    let reportsDebounceTimer;
+    function filterReportsTable() {
+      clearTimeout(reportsDebounceTimer);
+      reportsDebounceTimer = setTimeout(loadReportsTable, 250);
+    }
+
+    async function loadReportsTable() {
+      const search = document.getElementById('repSearchInput')?.value || '';
+      const severity = document.getElementById('repSeverityFilter')?.value || 'All';
+
+      let url = `/api/inspections?limit=150`;
+      if (search.trim()) url += `&search=${encodeURIComponent(search.trim())}`;
+      if (severity !== 'All') url += `&severity=${encodeURIComponent(severity)}`;
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const data = await res.json();
+        const tbody = document.getElementById('reportsTableBody');
+        const items = data.inspections || [];
+
+        const repTotalEl = document.getElementById('repTotalCount');
+        if (repTotalEl) repTotalEl.textContent = `Total: ${items.length} certified reports`;
+
+        if (items.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">No reports matched the selected filter criteria.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = items.map(item => `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-2.5 px-4 font-mono font-bold text-orange-600">REP-${item.id}</td>
+            <td class="py-2.5 px-4 font-mono font-medium text-slate-900">${item.id}</td>
+            <td class="py-2.5 px-4">
+              <span class="font-semibold text-slate-800 block">${item.infrastructure_name || 'Concrete Structure'}</span>
+              <span class="text-[10px] text-slate-400">${item.infrastructure_type || 'Bridge'} &bull; ${item.location || 'Site Alpha'}</span>
+            </td>
+            <td class="py-2.5 px-4 text-slate-500">${new Date(item.timestamp).toLocaleString()}</td>
+            <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[11px] font-bold ${getSeverityColorClass(item.severity_level)}">${item.severity_level}</span></td>
+            <td class="py-2.5 px-4 text-right space-x-1.5 whitespace-nowrap">
+              <a href="/api/inspections/${item.id}/report" target="_blank" class="px-3 py-1 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded text-xs transition shadow-sm inline-flex items-center space-x-1">
+                <span>Download PDF</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              </a>
+              <button onclick="viewInspectionDetail('${item.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded text-xs transition border border-slate-200" title="Inspect Visual Comparison">
+                Compare
+              </button>
+              <button onclick="deleteInspectionRecord('${item.id}')" class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition" title="Delete inspection">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load reports:', err);
+      }
+    }
+
+    function getSeverityColorClass(sev) {
+      if (sev === 'High') return 'bg-rose-100 text-rose-800';
+      if (sev === 'Moderate') return 'bg-amber-100 text-amber-800';
+      if (sev === 'Low') return 'bg-yellow-100 text-yellow-800';
+      return 'bg-emerald-100 text-emerald-800';
+    }
+
+    // --- User Profile & Authentication Logic ---
+    let currentUser = null;
+
+    async function initAuth() {
+      try {
+        const token = localStorage.getItem('infrascan_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch('/api/auth/me', { headers });
+
+        if (!res.ok) {
+          // Token expired or not authenticated -> redirect to login
+          localStorage.removeItem('infrascan_token');
+          window.location.href = '/login';
+          return false;
+        }
+
+        currentUser = await res.json();
+        updateUserUI(currentUser);
+        return true;
+      } catch (err) {
+        window.location.href = '/login';
+        return false;
+      }
+    }
+
+    function updateUserUI(user) {
+      if (!user) return;
+      const initials = (user.full_name || 'Admin')
+        .split(' ')
+        .map(n => n[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
+
+      const elAvatar = document.getElementById('headerUserAvatar');
+      const elName = document.getElementById('headerUserName');
+      const elRole = document.getElementById('headerUserRole');
+      if (elAvatar) elAvatar.textContent = initials || 'AD';
+      if (elName) elName.textContent = user.full_name;
+      if (elRole) elRole.textContent = user.role;
+
+      // Profile settings section
+      const profName = document.getElementById('profileFullName');
+      const profEmail = document.getElementById('profileEmail');
+      const profRole = document.getElementById('profileRoleBadge');
+      const profCreated = document.getElementById('profileCreatedAt');
+
+      if (profName) profName.value = user.full_name;
+      if (profEmail) profEmail.value = user.email;
+      if (profRole) profRole.textContent = user.role;
+      if (profCreated && user.created_at) {
+        profCreated.textContent = new Date(user.created_at).toLocaleDateString(undefined, {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+      }
+    }
+
+    async function handleUpdateProfile(e) {
+      e.preventDefault();
+      const alertBox = document.getElementById('profileAlert');
+      const btn = document.getElementById('btnUpdateProfile');
+      const fullName = document.getElementById('profileFullName').value.trim();
+      const email = document.getElementById('profileEmail').value.trim();
+
+      alertBox.className = 'hidden';
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const token = localStorage.getItem('infrascan_token');
+        const headers = {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        };
+        const res = await fetch('/api/auth/profile', {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({ full_name: fullName, email: email })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Failed to update profile.');
+
+        currentUser = data;
+        updateUserUI(data);
+        alertBox.className = 'p-3 rounded-lg text-xs font-medium bg-emerald-100 text-emerald-800';
+        alertBox.textContent = 'Profile & email successfully updated!';
+      } catch (err) {
+        alertBox.className = 'p-3 rounded-lg text-xs font-medium bg-rose-100 text-rose-800';
+        alertBox.textContent = err.message;
+      } finally {
+        alertBox.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Save Profile Changes';
+      }
+    }
+
+    async function handleChangePassword(e) {
+      e.preventDefault();
+      const alertBox = document.getElementById('passwordAlert');
+      const btn = document.getElementById('btnChangePassword');
+      const current_password = document.getElementById('pwdCurrent').value;
+      const new_password = document.getElementById('pwdNew').value;
+      const confirm_password = document.getElementById('pwdConfirm').value;
+
+      alertBox.className = 'hidden';
+
+      if (new_password !== confirm_password) {
+        alertBox.className = 'p-3 rounded-lg text-xs font-medium bg-rose-100 text-rose-800';
+        alertBox.textContent = 'New passwords do not match.';
+        alertBox.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Updating...';
+
+      try {
+        const token = localStorage.getItem('infrascan_token');
+        const headers = {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        };
+        const res = await fetch('/api/auth/change-password', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ current_password, new_password, confirm_password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Password change failed.');
+
+        alertBox.className = 'p-3 rounded-lg text-xs font-medium bg-emerald-100 text-emerald-800';
+        alertBox.textContent = data.message || 'Password changed successfully!';
+        document.getElementById('pwdCurrent').value = '';
+        document.getElementById('pwdNew').value = '';
+        document.getElementById('pwdConfirm').value = '';
+      } catch (err) {
+        alertBox.className = 'p-3 rounded-lg text-xs font-medium bg-rose-100 text-rose-800';
+        alertBox.textContent = err.message;
+      } finally {
+        alertBox.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Update Security Password';
+      }
+    }
+
+    async function handleLogout() {
+      if (!confirm('Are you sure you want to sign out of InfraScan?')) return;
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+      } catch (err) {}
+      localStorage.removeItem('infrascan_token');
+      localStorage.removeItem('infrascan_user');
+      window.location.href = '/login';
+    }
+
+    // Boot on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      const isAuthed = await initAuth();
+      if (isAuthed) {
+        loadDashboardData();
+      }
+    });
+  </script>
+</body>
+</html>

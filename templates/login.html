@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InfraScan – Civil Infrastructure Inspection Portal</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f97316'><path d='M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'/></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            civil: {
+              navy: '#0a192f',
+              navyDark: '#070f1e',
+              navyCard: '#0f1f38',
+              steel: '#334155',
+              steelLight: '#64748b',
+              steelBorder: '#1e293b',
+              orange: '#f97316',
+              orangeHover: '#ea580c',
+              orangeGlow: 'rgba(249, 115, 22, 0.25)',
+              concrete: '#f1f5f9'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Architectural Blueprint & Concrete Grid Pattern */
+    .blueprint-grid {
+      background-color: #070f1e;
+      background-image: 
+        linear-gradient(rgba(249, 115, 22, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(249, 115, 22, 0.05) 1px, transparent 1px),
+        linear-gradient(rgba(100, 116, 139, 0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(100, 116, 139, 0.12) 1px, transparent 1px);
+      background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+      background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+    }
+    .girder-accent {
+      background: repeating-linear-gradient(
+        -45deg,
+        #f97316,
+        #f97316 12px,
+        #0a192f 12px,
+        #0a192f 24px
+      );
+    }
+    .glow-orange {
+      box-shadow: 0 0 25px rgba(249, 115, 22, 0.2);
+    }
+  </style>
+</head>
+<body class="blueprint-grid text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-orange-500 selection:text-white">
+
+  <!-- Top Safety Navigation Bar -->
+  <header class="h-16 border-b border-slate-800/90 bg-slate-950/80 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center space-x-3.5">
+      <!-- Civil Hardhat / Structural Logo -->
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-slate-900 via-civil-navyCard to-slate-800 border border-orange-500/40 flex items-center justify-center text-orange-500 shadow-md shadow-orange-500/10">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <!-- Bridge / Crane Structural Truss Motif -->
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M5 21V7l7-4 7 4v14M4 11h16M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6" />
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="text-lg font-black tracking-wider text-white">INFRA<span class="text-orange-500">SCAN</span></span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-orange-500/15 text-orange-400 border border-orange-500/30">SHM v2.0</span>
+        </div>
+        <p class="text-[10px] font-medium text-slate-400 tracking-wide">Civil Infrastructure AI Damage Assessment Suite</p>
+      </div>
+    </div>
+
+    <!-- Quick Navigation Auth Tabs -->
+    <nav class="flex items-center space-x-1.5 p-1 bg-slate-900/90 border border-slate-800 rounded-lg text-xs font-semibold">
+      <button onclick="switchTab('login')" id="tab-login" class="px-4 py-1.5 rounded-md transition text-white bg-orange-600 shadow-sm shadow-orange-600/30 font-bold">
+        Inspector Sign In
+      </button>
+      <button onclick="switchTab('register')" id="tab-register" class="px-4 py-1.5 rounded-md transition text-slate-400 hover:text-white">
+        Register Account
+      </button>
+    </nav>
+  </header>
+
+  <!-- Construction Safety Warning Stripe Accent -->
+  <div class="h-1 w-full girder-accent opacity-70"></div>
+
+  <!-- Main Content Center -->
+  <main class="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 my-auto">
+    <div class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      
+      <!-- LEFT HERO COLUMN: Civil Engineering Context & Diagnostics (Visible on lg+) -->
+      <div class="hidden lg:flex lg:col-span-6 flex-col space-y-6 text-left pr-4">
+        
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-900/90 border border-orange-500/30 text-[11px] font-bold text-orange-400 w-fit">
+          <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+          <span>CIVIL ASSET STRUCTURAL INTEGRITY PLATFORM</span>
+        </div>
+
+        <div>
+          <h1 class="text-3xl xl:text-4xl font-extrabold text-white tracking-tight leading-tight">
+            AI-Powered Crack &amp; Damage Triage for <span class="text-orange-500">Critical Infrastructure</span>
+          </h1>
+          <p class="text-xs text-slate-300 mt-3 leading-relaxed">
+            Standardized concrete health monitoring engineered for bridges, highway pavements, tunnel linings, and hydraulic structures. Combines transfer-learned MobileNetV2 surface classification with 3-stage symmetrical U-Net pixel-level fissure segmentation.
+          </p>
+        </div>
+
+        <!-- Architectural Visual: Bridge & Concrete Structure Blueprint Badge -->
+        <div class="p-4 rounded-xl bg-slate-900/70 border border-slate-800 space-y-3 relative overflow-hidden">
+          <div class="absolute -right-6 -bottom-6 opacity-10 text-orange-500 pointer-events-none">
+            <svg class="w-48 h-48" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+          </div>
+          
+          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+            <span>Dual Neural Inspection Pipeline</span>
+            <span class="text-orange-400">Standard: SDNET + CRACK500</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div class="p-3 bg-slate-950/60 rounded-lg border border-slate-800/80">
+              <p class="text-orange-400 font-bold flex items-center space-x-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span>MobileNetV2</span>
+              </p>
+              <p class="text-slate-300 text-[11px] mt-1">Concrete crack probability screening with 99.2% validation accuracy.</p>
+            </div>
+            <div class="p-3 bg-slate-950/60 rounded-lg border border-slate-800/80">
+              <p class="text-orange-400 font-bold flex items-center space-x-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z" /></svg>
+                <span>U-Net Fissure Map</span>
+              </p>
+              <p class="text-slate-300 text-[11px] mt-1">256x256 discrete binary mask synthesis with pixel density calculation.</p>
+            </div>
+          </div>
+
+          <div class="pt-2 flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-800">
+            <span>🛡️ Automated ReportLab PDF Generation</span>
+            <span>📍 Forensic Audit SQLite Tracking</span>
+          </div>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="flex items-center space-x-6 text-[11px] font-semibold text-slate-400">
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>DOT Bridge Criteria Ready</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+            <span>PBKDF2 SHA-256 Hashing</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+            <span>JWT Session Guard</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT FORM COLUMN: Authentication Card -->
+      <div class="lg:col-span-6 w-full max-w-md mx-auto">
+        <div class="bg-slate-900/95 border border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 backdrop-blur-xl relative glow-orange">
+          
+          <!-- Top Card Badge -->
+          <div class="flex items-center justify-between mb-5 pb-3 border-b border-slate-800/80">
+            <div class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Inspector Terminal</span>
+            </div>
+            <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">PORTAL v2.0</span>
+          </div>
+
+          <!-- Alert Message Box -->
+          <div id="alertBox" class="hidden mb-5 p-3.5 rounded-xl text-xs flex items-start space-x-2.5 transition-all">
+            <svg id="alertIcon" class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
+            <div id="alertMessage" class="flex-1 font-medium leading-relaxed"></div>
+          </div>
+
+          <!-- ======================================================== -->
+          <!-- VIEW 1: LOGIN FORM -->
+          <!-- ======================================================== -->
+          <div id="view-login">
+            <div class="mb-5">
+              <h2 class="text-xl font-bold text-white tracking-tight flex items-center space-x-2">
+                <span>Civil Engineer Sign In</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-1">Authenticate credentials to initiate structural diagnostic evaluations.</p>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4 text-xs">
+              <!-- Role Selection -->
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">Assigned Operational Role</label>
+                <div class="relative">
+                  <select id="loginRole" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-slate-200 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 appearance-none font-medium">
+                    <option value="Admin" selected>Admin (Civil Systems Lead)</option>
+                    <option value="Inspector" disabled>Inspector (Standard Structural - v2.1)</option>
+                    <option value="Engineer" disabled>Bridge & Highway Engineer (v2.1)</option>
+                    <option value="Viewer" disabled>Guest Auditor (v2.1)</option>
+                  </select>
+                  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                  </div>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-1">Default role: Admin. Additional civil roles will activate in v2.1.</p>
+              </div>
+
+              <!-- Email -->
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">Registered Work Email ID *</label>
+                <input type="email" id="loginEmail" required placeholder="admin@infrascan.ai" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+              </div>
+
+              <!-- Password with Show/Hide toggle -->
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="font-semibold text-slate-300">Security Password *</label>
+                  <button type="button" onclick="switchTab('forgot')" class="text-[11px] text-orange-400 hover:text-orange-300 transition">Forgot Password?</button>
+                </div>
+                <div class="relative">
+                  <input type="password" id="loginPassword" required placeholder="••••••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 pr-10 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                  <button type="button" onclick="togglePasswordVisibility('loginPassword', 'loginEyeIcon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300">
+                    <svg id="loginEyeIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <button type="submit" id="loginBtn" class="w-full mt-2 py-2.5 px-4 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg shadow-lg shadow-orange-600/30 transition flex items-center justify-center space-x-2">
+                <span>Sign In to Dashboard</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+              </button>
+            </form>
+
+            <div class="mt-5 pt-4 border-t border-slate-800/80 text-center text-xs text-slate-400">
+              <span>Need inspector credentials? </span>
+              <button onclick="switchTab('register')" class="text-orange-400 font-bold hover:underline">Register New Account</button>
+            </div>
+
+            <!-- Default Credentials Hint for Local Testing -->
+            <div class="mt-4 p-3 rounded-lg bg-orange-500/10 border border-orange-500/20 text-[11px] text-orange-300">
+              <p class="font-bold mb-0.5">Reference Admin Account:</p>
+              <p>Email: <code class="bg-black/30 px-1 py-0.5 rounded text-orange-200">admin@infrascan.ai</code></p>
+              <p>Password: <code class="bg-black/30 px-1 py-0.5 rounded text-orange-200">AdminPassword@123</code></p>
+            </div>
+          </div>
+
+          <!-- ======================================================== -->
+          <!-- VIEW 2: REGISTER FORM -->
+          <!-- ======================================================== -->
+          <div id="view-register" class="hidden">
+            <div class="mb-5">
+              <h2 class="text-xl font-bold text-white tracking-tight">Register Inspector Profile</h2>
+              <p class="text-xs text-slate-400 mt-1">Enroll an authorized civil engineer or field inspector account.</p>
+            </div>
+
+            <form onsubmit="handleRegister(event)" class="space-y-4 text-xs">
+              <!-- Full Name -->
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">Inspector Full Name *</label>
+                <input type="text" id="regFullName" required placeholder="e.g. Dr. Jennifer Vance, P.E." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+              </div>
+
+              <!-- Email -->
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">Official Work Email ID *</label>
+                <input type="email" id="regEmail" required placeholder="inspector@dot.gov" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+              </div>
+
+              <!-- Password -->
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">Password (Minimum 8 Characters) *</label>
+                <div class="relative">
+                  <input type="password" id="regPassword" required minlength="8" placeholder="••••••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 pr-10 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                  <button type="button" onclick="togglePasswordVisibility('regPassword', 'regEyeIcon1')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300">
+                    <svg id="regEyeIcon1" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Confirm Password -->
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">Confirm Password *</label>
+                <div class="relative">
+                  <input type="password" id="regConfirmPassword" required minlength="8" placeholder="••••••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 pr-10 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                  <button type="button" onclick="togglePasswordVisibility('regConfirmPassword', 'regEyeIcon2')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300">
+                    <svg id="regEyeIcon2" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Register Button -->
+              <button type="submit" id="regBtn" class="w-full mt-2 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow-lg shadow-emerald-600/30 transition flex items-center justify-center space-x-2">
+                <span>Register Account</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+              </button>
+            </form>
+
+            <div class="mt-5 pt-4 border-t border-slate-800/80 text-center text-xs text-slate-400">
+              <span>Already registered? </span>
+              <button onclick="switchTab('login')" class="text-orange-400 font-bold hover:underline">Return to Sign In</button>
+            </div>
+          </div>
+
+          <!-- ======================================================== -->
+          <!-- VIEW 3: FORGOT PASSWORD -->
+          <!-- ======================================================== -->
+          <div id="view-forgot" class="hidden">
+            <div class="mb-5">
+              <h2 class="text-xl font-bold text-white tracking-tight">Reset Account Password</h2>
+              <p class="text-xs text-slate-400 mt-1">Enter your registered email to receive a cryptographically secure token.</p>
+            </div>
+
+            <form onsubmit="handleForgotPassword(event)" class="space-y-4 text-xs">
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">Registered Email ID *</label>
+                <input type="email" id="forgotEmail" required placeholder="admin@infrascan.ai" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+              </div>
+
+              <button type="submit" id="forgotBtn" class="w-full py-2.5 px-4 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg shadow-lg transition">
+                Generate Secure Reset Token
+              </button>
+            </form>
+
+            <div id="devResetBox" class="hidden mt-4 p-3.5 rounded-xl bg-orange-500/10 border border-orange-500/30 text-xs text-orange-200 space-y-2">
+              <p class="font-bold">Development Mode Link Generated:</p>
+              <a id="devResetLink" href="#" class="block p-2 bg-black/40 rounded text-[11px] text-orange-400 font-mono break-all hover:underline"></a>
+              <p class="text-[10px] text-slate-400">Click the link above or click "Enter Reset Token" below to finalize.</p>
+            </div>
+
+            <div class="mt-5 pt-4 border-t border-slate-800/80 flex justify-between items-center text-xs">
+              <button onclick="switchTab('reset')" class="text-orange-400 hover:underline">Have a token? Reset Now</button>
+              <button onclick="switchTab('login')" class="text-slate-400 hover:text-white">&larr; Back to Sign In</button>
+            </div>
+          </div>
+
+          <!-- ======================================================== -->
+          <!-- VIEW 4: RESET PASSWORD (WITH TOKEN) -->
+          <!-- ======================================================== -->
+          <div id="view-reset" class="hidden">
+            <div class="mb-5">
+              <h2 class="text-xl font-bold text-white tracking-tight">Set New Password</h2>
+              <p class="text-xs text-slate-400 mt-1">Provide your reset token and enter your updated password.</p>
+            </div>
+
+            <form onsubmit="handleResetPassword(event)" class="space-y-4 text-xs">
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">Security Reset Token *</label>
+                <input type="text" id="resetToken" required placeholder="Paste reset token here" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-slate-200 font-mono placeholder-slate-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">New Password (Min 8 Characters) *</label>
+                <input type="password" id="resetNewPassword" required minlength="8" placeholder="••••••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">Confirm New Password *</label>
+                <input type="password" id="resetConfirmPassword" required minlength="8" placeholder="••••••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+              </div>
+
+              <button type="submit" id="resetBtn" class="w-full py-2.5 px-4 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg shadow-lg transition">
+                Update Account Password
+              </button>
+            </form>
+
+            <div class="mt-5 pt-4 border-t border-slate-800/80 text-center text-xs">
+              <button onclick="switchTab('login')" class="text-slate-400 hover:text-white">&larr; Return to Sign In</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Civil Engineering Footer -->
+  <footer class="py-4 border-t border-slate-800/80 bg-slate-950/70 text-center text-xs text-slate-500">
+    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center space-x-2">
+        <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+        <span class="text-slate-400 font-semibold">InfraScan AI v2.0</span>
+        <span>&bull; Civil Structural Health Monitoring Standard</span>
+      </div>
+      <div>
+        <span>MobileNetV2 (SDNET2018) + Symmetrical U-Net (CRACK500)</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    function showAlert(message, type = 'error') {
+      const box = document.getElementById('alertBox');
+      const msg = document.getElementById('alertMessage');
+      const icon = document.getElementById('alertIcon');
+
+      box.className = `mb-5 p-3.5 rounded-xl text-xs flex items-start space-x-2.5 transition-all ${
+        type === 'success' 
+          ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300' 
+          : 'bg-rose-500/15 border border-rose-500/30 text-rose-300'
+      }`;
+
+      icon.innerHTML = type === 'success'
+        ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />'
+        : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />';
+
+      msg.textContent = message;
+      box.classList.remove('hidden');
+    }
+
+    function clearAlert() {
+      document.getElementById('alertBox').classList.add('hidden');
+    }
+
+    function togglePasswordVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.add('text-orange-400');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('text-orange-400');
+      }
+    }
+
+    function switchTab(tab) {
+      clearAlert();
+      ['login', 'register', 'forgot', 'reset'].forEach(t => {
+        const view = document.getElementById(`view-${t}`);
+        if (view) view.classList.add('hidden');
+      });
+
+      const target = document.getElementById(`view-${tab}`);
+      if (target) target.classList.remove('hidden');
+
+      const tabLogin = document.getElementById('tab-login');
+      const tabReg = document.getElementById('tab-register');
+
+      if (tab === 'login') {
+        tabLogin.className = 'px-4 py-1.5 rounded-md transition text-white bg-orange-600 shadow-sm shadow-orange-600/30 font-bold';
+        tabReg.className = 'px-4 py-1.5 rounded-md transition text-slate-400 hover:text-white';
+      } else if (tab === 'register') {
+        tabReg.className = 'px-4 py-1.5 rounded-md transition text-white bg-orange-600 shadow-sm shadow-orange-600/30 font-bold';
+        tabLogin.className = 'px-4 py-1.5 rounded-md transition text-slate-400 hover:text-white';
+      } else {
+        tabLogin.className = 'px-4 py-1.5 rounded-md transition text-slate-400 hover:text-white';
+        tabReg.className = 'px-4 py-1.5 rounded-md transition text-slate-400 hover:text-white';
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      clearAlert();
+      const btn = document.getElementById('loginBtn');
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const role = document.getElementById('loginRole').value;
+
+      btn.disabled = true;
+      btn.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span> Authenticating...`;
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, role })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.detail || 'Authentication failed. Please verify credentials.');
+        }
+
+        localStorage.setItem('infrascan_token', data.access_token);
+        localStorage.setItem('infrascan_user', JSON.stringify(data.user));
+
+        showAlert('Authentication verified! Launching Civil Inspection Dashboard...', 'success');
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 600);
+      } catch (err) {
+        showAlert(err.message, 'error');
+        btn.disabled = false;
+        btn.innerHTML = `<span>Sign In to Dashboard</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>`;
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      clearAlert();
+      const btn = document.getElementById('regBtn');
+      const fullName = document.getElementById('regFullName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+      if (password !== confirmPassword) {
+        showAlert('Passwords do not match.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span> Enrolling Profile...`;
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ full_name: fullName, email, password, confirm_password: confirmPassword })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.detail || 'Registration failed.');
+        }
+
+        showAlert(`Inspector profile for ${data.full_name} enrolled successfully! Please sign in.`, 'success');
+        setTimeout(() => {
+          document.getElementById('loginEmail').value = email;
+          document.getElementById('loginPassword').value = '';
+          switchTab('login');
+        }, 1200);
+      } catch (err) {
+        showAlert(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Register Account</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>`;
+      }
+    }
+
+    async function handleForgotPassword(e) {
+      e.preventDefault();
+      clearAlert();
+      const btn = document.getElementById('forgotBtn');
+      const email = document.getElementById('forgotEmail').value.trim();
+
+      btn.disabled = true;
+      btn.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span> Generating Token...`;
+
+      try {
+        const res = await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.detail || 'Failed to initiate password reset.');
+        }
+
+        showAlert(data.message, 'success');
+        if (data.dev_reset_link) {
+          const box = document.getElementById('devResetBox');
+          const link = document.getElementById('devResetLink');
+          link.href = data.dev_reset_link;
+          link.textContent = window.location.origin + data.dev_reset_link;
+          link.onclick = (ev) => {
+            ev.preventDefault();
+            const token = data.dev_reset_link.split('token=')[1];
+            document.getElementById('resetToken').value = token;
+            switchTab('reset');
+          };
+          box.classList.remove('hidden');
+        }
+      } catch (err) {
+        showAlert(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `Generate Secure Reset Token`;
+      }
+    }
+
+    async function handleResetPassword(e) {
+      e.preventDefault();
+      clearAlert();
+      const btn = document.getElementById('resetBtn');
+      const token = document.getElementById('resetToken').value.trim();
+      const new_password = document.getElementById('resetNewPassword').value;
+      const confirm_password = document.getElementById('resetConfirmPassword').value;
+
+      if (new_password !== confirm_password) {
+        showAlert('Passwords do not match.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span> Updating...`;
+
+      try {
+        const res = await fetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, new_password, confirm_password })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.detail || 'Password reset failed.');
+        }
+
+        showAlert(data.message, 'success');
+        setTimeout(() => {
+          switchTab('login');
+        }, 1500);
+      } catch (err) {
+        showAlert(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `Update Account Password`;
+      }
+    }
+
+    // Auto-check on load (if token parameter in URL, switch to reset tab)
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      if (token) {
+        document.getElementById('resetToken').value = token;
+        switchTab('reset');
+        return;
+      }
+
+      // Check if already authenticated
+      try {
+        const token = localStorage.getItem('infrascan_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch('/api/auth/me', { headers });
+        if (res.ok) {
+          // Already logged in, redirect directly to dashboard
+          window.location.href = '/dashboard';
+        }
+      } catch (err) {}
+    });
+  </script>
+</body>
+</html>
