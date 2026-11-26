@@ -1,0 +1,19 @@
+{
+  "discrepancy_explanation": "Training was run with --subset 0.25 (474 train, 87 val, 281 test) for CPU resource feasibility. Both 281 subset and 1,124 full benchmark test pairs are now officially reported.",
+  "subset_281": {
+    "test_pairs": 281,
+    "mean_dice": 0.5117279887199402,
+    "mean_iou": 0.3695489764213562,
+    "pixel_accuracy": 0.9419720198336021,
+    "precision": 0.5313540046495813,
+    "recall": 0.660470617994622
+  },
+  "full_1124": {
+    "test_pairs": 1124,
+    "mean_dice": 0.5039411783218384,
+    "mean_iou": 0.3622315526008606,
+    "pixel_accuracy": 0.9425012174450206,
+    "precision": 0.5213659844326247,
+    "recall": 0.6580721669740931
+  }
+}

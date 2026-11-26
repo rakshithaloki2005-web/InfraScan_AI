@@ -1,0 +1,12 @@
+INFRASCAN CRACK CLASSIFICATION REPORT (SDNET2018)
+==================================================
+               precision    recall  f1-score   support
+
+Uncracked (0)     0.9493    0.8707    0.9083      1786
+  Cracked (1)     0.5043    0.7390    0.5995       318
+
+     accuracy                         0.8508      2104
+    macro avg     0.7268    0.8048    0.7539      2104
+ weighted avg     0.8821    0.8508    0.8616      2104
+
+ROC-AUC Score: 0.8879

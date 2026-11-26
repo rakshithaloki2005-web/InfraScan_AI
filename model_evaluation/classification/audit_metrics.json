@@ -1,0 +1,43 @@
+{
+  "discrepancy_explanation": "Training was run with --subset 0.25 (9,816 train, 2,104 val, 2,104 test) for CPU resource feasibility. Both 2,104 subset and 8,414 full test sets are now officially reported.",
+  "subset_2104": {
+    "total_samples": 2104,
+    "uncracked_support": 1786,
+    "cracked_support": 318,
+    "confusion_matrix": [
+      [
+        1555,
+        231
+      ],
+      [
+        83,
+        235
+      ]
+    ],
+    "accuracy": 0.8507604562737643,
+    "precision": 0.5042918454935622,
+    "recall": 0.7389937106918238,
+    "f1_score": 0.5994897959183674,
+    "roc_auc": 0.887949248874897
+  },
+  "full_8414": {
+    "total_samples": 8414,
+    "uncracked_support": 7142,
+    "cracked_support": 1272,
+    "confusion_matrix": [
+      [
+        6236,
+        906
+      ],
+      [
+        330,
+        942
+      ]
+    ],
+    "accuracy": 0.8531019729023057,
+    "precision": 0.5097402597402597,
+    "recall": 0.7405660377358491,
+    "f1_score": 0.6038461538461538,
+    "roc_auc": 0.8881182094052544
+  }
+}
