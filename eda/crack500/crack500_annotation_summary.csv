@@ -1,0 +1,7 @@
+Folder,TXT Files,Sample TXT Files
+traincrop,0,[]
+testcrop,0,[]
+valcrop,0,[]
+traindata,300,"['20160222_080850_mask.txt', '20160222_081011_mask.txt', '20160222_081031_mask.txt', '20160222_081102_mask.txt', '20160222_081111_mask.txt']"
+testdata,200,"['20160222_080933_mask.txt', '20160222_081839_mask.txt', '20160222_114759_mask.txt', '20160222_115305_mask.txt', '20160222_163940_mask.txt']"
+valdata,0,[]

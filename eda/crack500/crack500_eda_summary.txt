@@ -1,0 +1,17 @@
+CRACK500 EDA SUMMARY
+
+Image-mask pairs checked: 3868
+Matching dimensions: 3865
+Dimension mismatches: 3
+Unreadable image/mask files: 0
+
+Dimension mismatches:
+- 20160326_144512.jpg
+- 20160326_150319.jpg
+- 20160330_170428.jpg
+
+TXT annotation matching:
+- traindata: 250 images matched, 50 unmatched TXT filenames
+- testdata: 200 images matched, 0 unmatched TXT filenames
+
+Original dataset files were not modified.

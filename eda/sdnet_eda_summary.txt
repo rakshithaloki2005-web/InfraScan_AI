@@ -1,0 +1,40 @@
+
+SDNET2018 EXPLORATORY DATA ANALYSIS
+==================================
+
+1. Total Images: 56092
+
+2. Category Distribution:
+Category  Image Count
+      CD         2025
+      UD        11595
+      CP         2608
+      UP        21726
+      CW         3851
+      UW        14287
+
+3. Cracked vs Uncracked Distribution:
+    Class  Image Count  Percentage
+  Cracked         8484   15.125152
+Uncracked        47608   84.874848
+
+4. Image File Size Statistics:
+count    56092.000000
+mean         9.240764
+std          3.818049
+min          1.780000
+25%          6.200000
+50%          8.080000
+75%         12.180000
+max         21.910000
+
+5. Image Dimensions:
+One sample image from each of the six categories
+was checked. All sampled images were 256 x 256 pixels.
+
+6. Image Readability:
+100 images were checked for readability.
+Unreadable images found in this sample: 0.
+
+Note: Dimension and readability checks were sample-based,
+not full-dataset validation.

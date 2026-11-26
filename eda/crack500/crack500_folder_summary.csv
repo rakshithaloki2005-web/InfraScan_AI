@@ -1,0 +1,8 @@
+Folder,Total Files,JPG Images,PNG Files,TXT Files
+fphb_testresult,2248,0,1124,0
+testcrop,2248,1124,1124,0
+testdata,600,200,200,200
+traincrop,3792,1896,1896,0
+traindata,800,250,250,300
+valcrop,696,348,348,0
+valdata,100,50,50,0

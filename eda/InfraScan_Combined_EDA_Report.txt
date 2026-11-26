@@ -1,0 +1,65 @@
+INFRASCAN - COMBINED DATASET EDA REPORT
+=======================================
+
+1. SDNET2018 DATASET
+--------------------
+Total images: 56,092
+
+Cracked images: 8,484 (15.13%)
+Uncracked images: 47,608 (84.87%)
+
+Categories:
+CD: 2,025
+UD: 11,595
+CP: 2,608
+UP: 21,726
+CW: 3,851
+UW: 14,287
+
+Mean image file size: 9.24 KB
+Minimum image file size: 1.78 KB
+Maximum image file size: 21.91 KB
+
+Sampled dimensions: 256 x 256 pixels
+Readability: 100 sampled images checked; zero unreadable.
+
+
+2. CRACK500 DATASET
+-------------------
+Image-mask pairs checked: 3,868
+Pairs with matching dimensions: 3,865
+Dimension mismatches: 3
+Unreadable image/mask files: 0
+
+All three dimension mismatches are in traindata:
+- 20160326_144512.jpg
+- 20160326_150319.jpg
+- 20160330_170428.jpg
+
+TXT annotation matching:
+- traindata: 250 images matched; 50 TXT filenames unmatched
+- testdata: 200 images matched; zero TXT filenames unmatched
+
+Original dataset files were not modified.
+
+
+3. COMBINED FINDINGS
+--------------------
+SDNET2018 provides cracked and uncracked images across six
+categories and has a class imbalance: 84.87% uncracked versus
+15.13% cracked.
+
+CRACK500 provides image-mask pairs suitable for crack
+segmentation analysis. Three pairs require dimension review,
+and 50 training TXT filenames require further investigation.
+
+SDNET2018 dimension and readability checks were sample-based.
+CRACK500 image-mask dimension validation covered all 3,868 pairs.
+
+
+4. RECOMMENDED FOLLOW-UP
+------------------------
+- Investigate the three CRACK500 dimension mismatches.
+- Review the 50 unmatched CRACK500 training TXT filenames.
+- Preserve original dataset files.
+- Validate preprocessing and dataset compatibility before training.

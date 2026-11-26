@@ -1,0 +1,7 @@
+Folder,JPG Images,Matching Pairs,JPG Without Mask
+traincrop,1896,1896,0
+testcrop,1124,1124,0
+valcrop,348,348,0
+traindata,250,250,0
+testdata,200,200,0
+valdata,50,50,0
